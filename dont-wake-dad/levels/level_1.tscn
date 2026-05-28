@@ -1,0 +1,451 @@
+[gd_scene load_steps=14 format=3 uid="uid://level1001"]
+
+[ext_resource type="PackedScene" path="res://entities/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://entities/dad.tscn" id="2_dad"]
+[ext_resource type="PackedScene" path="res://entities/noise_object.tscn" id="3_noise"]
+[ext_resource type="PackedScene" path="res://entities/hide_spot.tscn" id="4_hide"]
+[ext_resource type="PackedScene" path="res://entities/objective.tscn" id="5_obj"]
+
+; --- Collision shapes ---
+[sub_resource type="RectangleShape2D" id="RS_wallL"]
+size = Vector2(60, 1400)
+
+[sub_resource type="RectangleShape2D" id="RS_wallR"]
+size = Vector2(60, 1400)
+
+[sub_resource type="RectangleShape2D" id="RS_wallTop"]
+size = Vector2(390, 60)
+
+[sub_resource type="RectangleShape2D" id="RS_wallBot"]
+size = Vector2(390, 60)
+
+[sub_resource type="RectangleShape2D" id="RS_divL1"]
+size = Vector2(110, 20)
+
+[sub_resource type="RectangleShape2D" id="RS_divR1"]
+size = Vector2(110, 20)
+
+[sub_resource type="RectangleShape2D" id="RS_divL2"]
+size = Vector2(110, 20)
+
+[sub_resource type="RectangleShape2D" id="RS_divR2"]
+size = Vector2(110, 20)
+
+; Floor zone collision
+[sub_resource type="RectangleShape2D" id="RS_floor_wood"]
+size = Vector2(270, 400)
+
+[sub_resource type="RectangleShape2D" id="RS_floor_carpet"]
+size = Vector2(390, 400)
+
+[sub_resource type="RectangleShape2D" id="RS_floor_tile"]
+size = Vector2(390, 380)
+
+; =====================
+; ROOT
+; =====================
+[node name="Level1" type="Node2D"]
+
+; Background fill (dark house)
+[node name="Background" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 0
+offset_right = 390
+offset_bottom = 1400
+color = Color(0.06, 0.06, 0.12, 1)
+
+; ---- KITCHEN (top, y 0-380) ----
+[node name="KitchenFloor" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 0
+offset_right = 390
+offset_bottom = 380
+color = Color(0.12, 0.10, 0.10, 1)
+
+[node name="KitchenLabel" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "KITCHEN"
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.4, 0.4, 0.4, 1)
+
+; ---- HALLWAY 1 (y 380-620) ----
+[node name="Hallway1Floor" type="ColorRect" parent="."]
+offset_left = 115
+offset_top = 380
+offset_right = 275
+offset_bottom = 620
+color = Color(0.09, 0.08, 0.07, 1)
+
+; Hallway walls (left block)
+[node name="HallDiv1_LeftBlock" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 380
+offset_right = 115
+offset_bottom = 620
+color = Color(0.15, 0.12, 0.10, 1)
+
+; Hallway walls (right block)
+[node name="HallDiv1_RightBlock" type="ColorRect" parent="."]
+offset_left = 275
+offset_top = 380
+offset_right = 390
+offset_bottom = 620
+color = Color(0.15, 0.12, 0.10, 1)
+
+; Hallway 1 left wall - collision
+[node name="WallHall1L" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(57, 500)
+
+[node name="Col" type="CollisionShape2D" parent="WallHall1L"]
+shape = SubResource("RS_divL1")
+
+; Hallway 1 right wall - collision
+[node name="WallHall1R" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(333, 500)
+
+[node name="Col" type="CollisionShape2D" parent="WallHall1R"]
+shape = SubResource("RS_divR1")
+
+; Creaky floor strip in hallway
+[node name="CreakyFloor" type="Area2D" parent="."]
+position = Vector2(195, 490)
+collision_layer = 4
+collision_mask = 1
+
+[node name="Visual" type="ColorRect" parent="CreakyFloor"]
+offset_left = -80
+offset_top = -6
+offset_right = 80
+offset_bottom = 6
+color = Color(0.5, 0.35, 0.1, 0.6)
+
+[node name="Col" type="CollisionShape2D" parent="CreakyFloor"]
+shape = SubResource("RS_floor_wood")
+scale = Vector2(0.36, 0.03)
+
+[node name="Label" type="Label" parent="CreakyFloor"]
+position = Vector2(-24, -20)
+text = "🪵"
+theme_override_font_sizes/font_size = 10
+
+; ---- LIVING ROOM (y 620-940) ----
+[node name="LivingRoomFloor" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 620
+offset_right = 390
+offset_bottom = 940
+color = Color(0.10, 0.09, 0.11, 1)
+
+[node name="LivingRoomLabel" type="Label" parent="."]
+position = Vector2(10, 630)
+text = "LIVING ROOM"
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.4, 0.4, 0.4, 1)
+
+; ---- HALLWAY 2 / DAD'S ZONE (y 940-1140) ----
+[node name="Hallway2Floor" type="ColorRect" parent="."]
+offset_left = 115
+offset_top = 940
+offset_right = 275
+offset_bottom = 1140
+color = Color(0.08, 0.07, 0.06, 1)
+
+[node name="HallDiv2_LeftBlock" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 940
+offset_right = 115
+offset_bottom = 1140
+color = Color(0.18, 0.10, 0.10, 1)
+
+[node name="HallDiv2_RightBlock" type="ColorRect" parent="."]
+offset_left = 275
+offset_top = 940
+offset_right = 390
+offset_bottom = 1140
+color = Color(0.18, 0.10, 0.10, 1)
+
+; Dad's door indicator
+[node name="DadDoorLight" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 1000
+offset_right = 115
+offset_bottom = 1050
+color = Color(0.4, 0.3, 0.05, 0.3)
+
+[node name="DadDoorLabel" type="Label" parent="."]
+position = Vector2(4, 1008)
+text = "DAD'S\nROOM"
+theme_override_font_sizes/font_size = 9
+modulate = Color(0.7, 0.3, 0.3, 0.8)
+
+; Hallway 2 wall collisions
+[node name="WallHall2L" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(57, 1040)
+
+[node name="Col" type="CollisionShape2D" parent="WallHall2L"]
+shape = SubResource("RS_divL2")
+
+[node name="WallHall2R" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(333, 1040)
+
+[node name="Col" type="CollisionShape2D" parent="WallHall2R"]
+shape = SubResource("RS_divR2")
+
+; ---- KID'S ROOM (y 1140-1400) ----
+[node name="KidsRoomFloor" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 1140
+offset_right = 390
+offset_bottom = 1400
+color = Color(0.09, 0.10, 0.14, 1)
+
+[node name="KidsRoomLabel" type="Label" parent="."]
+position = Vector2(10, 1150)
+text = "KID'S ROOM"
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.4, 0.5, 0.6, 1)
+
+; ---- OUTER WALLS ----
+[node name="WallLeft" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(0, 700)
+
+[node name="Col" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("RS_wallL")
+position = Vector2(0, 0)
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(390, 700)
+
+[node name="Col" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("RS_wallR")
+
+[node name="WallTop" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(195, 0)
+
+[node name="Col" type="CollisionShape2D" parent="WallTop"]
+shape = SubResource("RS_wallTop")
+
+[node name="WallBottom" type="StaticBody2D" parent="."]
+collision_layer = 2
+position = Vector2(195, 1400)
+
+[node name="Col" type="CollisionShape2D" parent="WallBottom"]
+shape = SubResource("RS_wallBot")
+
+; ---- FLOOR NOISE ZONES ----
+[node name="FloorZone_Hardwood" type="Area2D" parent="."]
+position = Vector2(195, 500)
+collision_layer = 0
+collision_mask = 1
+metadata/floor_noise = 20.0
+
+[node name="FZH_Col" type="CollisionShape2D" parent="FloorZone_Hardwood"]
+shape = SubResource("RS_floor_wood")
+
+[node name="FloorZone_Carpet_Living" type="Area2D" parent="."]
+position = Vector2(195, 780)
+collision_layer = 0
+collision_mask = 1
+metadata/floor_noise = 5.0
+
+[node name="FZC_Col" type="CollisionShape2D" parent="FloorZone_Carpet_Living"]
+shape = SubResource("RS_floor_carpet")
+
+[node name="FloorZone_Tile_Kitchen" type="Area2D" parent="."]
+position = Vector2(195, 190)
+collision_layer = 0
+collision_mask = 1
+metadata/floor_noise = 15.0
+
+[node name="FZT_Col" type="CollisionShape2D" parent="FloorZone_Tile_Kitchen"]
+shape = SubResource("RS_floor_tile")
+
+; ---- NOISE OBJECTS ----
+
+; Lego pile (living room, unavoidable-ish)
+[node name="Lego" type="Area2D" parent="."]
+position = Vector2(195, 780)
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("3_noise")
+noise_value = 75.0
+object_type = "lego"
+one_shot = false
+
+[node name="Visual" type="Polygon2D" parent="Lego"]
+polygon = PackedVector2Array(-10, -6, 10, -6, 10, 6, -10, 6)
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Lego"]
+shape = SubResource("RS_floor_tile")
+scale = Vector2(0.2, 0.12)
+
+[node name="Label" type="Label" parent="Lego"]
+position = Vector2(-16, -24)
+text = ""
+visible = false
+theme_override_font_sizes/font_size = 14
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="Lego"]
+volume_db = 4.0
+
+; Lego pile 2 (offset)
+[node name="Lego2" type="Area2D" parent="."]
+position = Vector2(130, 810)
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("3_noise")
+noise_value = 75.0
+object_type = "lego"
+one_shot = false
+
+[node name="Visual" type="Polygon2D" parent="Lego2"]
+polygon = PackedVector2Array(-8, -5, 8, -5, 8, 5, -8, 5)
+color = Color(0.3, 0.6, 1.0, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Lego2"]
+shape = SubResource("RS_floor_tile")
+scale = Vector2(0.16, 0.1)
+
+[node name="Label" type="Label" parent="Lego2"]
+position = Vector2(-16, -24)
+text = ""
+visible = false
+theme_override_font_sizes/font_size = 14
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="Lego2"]
+volume_db = 4.0
+
+; Dog bowl (kitchen)
+[node name="DogBowl" type="Area2D" parent="."]
+position = Vector2(80, 320)
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("3_noise")
+noise_value = 35.0
+object_type = "dog"
+one_shot = false
+
+[node name="Visual" type="Polygon2D" parent="DogBowl"]
+polygon = PackedVector2Array(-14, -8, 14, -8, 10, 8, -10, 8)
+color = Color(0.5, 0.35, 0.2, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DogBowl"]
+shape = SubResource("RS_floor_tile")
+scale = Vector2(0.18, 0.1)
+
+[node name="Label" type="Label" parent="DogBowl"]
+position = Vector2(-16, -24)
+text = ""
+visible = false
+theme_override_font_sizes/font_size = 14
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="DogBowl"]
+
+; ---- HIDE SPOTS ----
+
+; Under bed (kid's room)
+[node name="HideUnderBed" type="Area2D" parent="."]
+position = Vector2(300, 1280)
+collision_layer = 8
+collision_mask = 1
+script = ExtResource("4_hide")
+add_to_group = "hide_spot"
+spot_name = "under the bed"
+
+[node name="BedVisual" type="Polygon2D" parent="HideUnderBed"]
+polygon = PackedVector2Array(-45, -28, 45, -28, 45, 28, -45, 28)
+color = Color(0.3, 0.2, 0.4, 0.8)
+
+[node name="Visual" type="Polygon2D" parent="HideUnderBed"]
+polygon = PackedVector2Array(-30, -20, 30, -20, 30, 20, -30, 20)
+color = Color(0.15, 0.45, 0.15, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HideUnderBed"]
+shape = SubResource("RS_floor_carpet")
+scale = Vector2(0.15, 0.1)
+
+[node name="PromptLabel" type="Label" parent="HideUnderBed"]
+position = Vector2(-36, -40)
+text = "TAP TO HIDE"
+visible = false
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.2, 1.0, 0.3, 1)
+
+; Behind couch (living room)
+[node name="HideBehindCouch" type="Area2D" parent="."]
+position = Vector2(60, 700)
+collision_layer = 8
+collision_mask = 1
+script = ExtResource("4_hide")
+add_to_group = "hide_spot"
+spot_name = "behind the couch"
+
+[node name="CouchVisual" type="Polygon2D" parent="HideBehindCouch"]
+polygon = PackedVector2Array(-50, -22, 50, -22, 50, 22, -50, 22)
+color = Color(0.35, 0.25, 0.15, 0.9)
+
+[node name="Visual" type="Polygon2D" parent="HideBehindCouch"]
+polygon = PackedVector2Array(-30, -20, 30, -20, 30, 20, -30, 20)
+color = Color(0.15, 0.45, 0.15, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HideBehindCouch"]
+shape = SubResource("RS_floor_carpet")
+scale = Vector2(0.15, 0.1)
+
+[node name="PromptLabel" type="Label" parent="HideBehindCouch"]
+position = Vector2(-40, -40)
+text = "TAP TO HIDE"
+visible = false
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.2, 1.0, 0.3, 1)
+
+; ---- OBJECTIVE ----
+[node name="Fridge" type="Area2D" parent="."]
+position = Vector2(320, 100)
+collision_layer = 16
+collision_mask = 1
+script = ExtResource("5_obj")
+add_to_group = "objective"
+objective_description = "Get food from fridge"
+
+[node name="Visual" type="Polygon2D" parent="Fridge"]
+polygon = PackedVector2Array(-20, -30, 20, -30, 20, 30, -20, 30)
+color = Color(0.7, 0.8, 1.0, 1)
+
+[node name="InnerGlow" type="Polygon2D" parent="Fridge"]
+polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+color = Color(1.0, 1.0, 0.6, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Fridge"]
+shape = SubResource("RS_floor_tile")
+scale = Vector2(0.2, 0.15)
+
+[node name="Glow" type="PointLight2D" parent="Fridge"]
+color = Color(0.7, 0.85, 1.0, 1)
+energy = 0.6
+texture_scale = 1.0
+
+[node name="Label" type="Label" parent="Fridge"]
+position = Vector2(-30, -48)
+text = "TAP TO GRAB"
+visible = false
+theme_override_font_sizes/font_size = 13
+modulate = Color(1, 1, 0.2, 1)
+
+[node name="Audio" type="AudioStreamPlayer2D" parent="Fridge"]
+volume_db = 2.0
+
+; ---- SPAWN MARKERS ----
+[node name="PlayerStart" type="Marker2D" parent="."]
+position = Vector2(195, 1260)
+
+[node name="DadStart" type="Marker2D" parent="."]
+position = Vector2(195, 80)

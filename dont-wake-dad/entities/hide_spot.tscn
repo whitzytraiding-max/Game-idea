@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://hidespot001"]
+
+[ext_resource type="Script" path="res://scripts/hide_spot.gd" id="1_hide"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_col"]
+size = Vector2(60, 40)
+
+[node name="HideSpot" type="Area2D"]
+collision_layer = 8
+collision_mask = 1
+script = ExtResource("1_hide")
+add_to_group = "hide_spot"
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-30, -20, 30, -20, 30, 20, -30, 20)
+color = Color(0.15, 0.45, 0.15, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_col")
+
+[node name="PromptLabel" type="Label" parent="."]
+position = Vector2(-36, -36)
+text = "TAP TO HIDE"
+visible = false
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.2, 1.0, 0.3, 1)

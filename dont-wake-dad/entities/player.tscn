@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3 uid="uid://player001"]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(22, 28)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
+radius = 36.0
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 1
+collision_mask = 2
+script = ExtResource("1_player")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-11, -14, 11, -14, 14, 0, 8, 14, -8, 14, -14, 0)
+color = Color(0.25, 0.45, 0.85, 1)
+
+[node name="Head" type="Polygon2D" parent="."]
+position = Vector2(0, -20)
+polygon = PackedVector2Array(-8, -8, 8, -8, 9, 4, 0, 8, -9, 4)
+color = Color(0.95, 0.8, 0.65, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_body")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+
+[node name="InteractShape" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("CircleShape2D_interact")
+
+[node name="Flashlight" type="PointLight2D" parent="."]
+position = Vector2(0, -10)
+color = Color(1, 0.95, 0.8, 1)
+energy = 0.9
+texture_scale = 1.8
+shadow_enabled = true
+
+[node name="StepAudio" type="AudioStreamPlayer2D" parent="."]
+volume_db = -6.0
+max_distance = 200.0
+
+[node name="CaughtAudio" type="AudioStreamPlayer2D" parent="."]
+volume_db = 0.0

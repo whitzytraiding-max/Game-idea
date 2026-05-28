@@ -1,0 +1,85 @@
+[gd_scene load_steps=2 format=3 uid="uid://win001"]
+
+[ext_resource type="Script" path="res://scripts/win_screen.gd" id="1_win"]
+
+[node name="WinScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_win")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.07, 0.04, 1)
+
+; Kid victory visual (emoji)
+[node name="KidVisual" type="Label" parent="."]
+layout_mode = 0
+offset_left = 0
+offset_top = 80
+offset_right = 390
+offset_bottom = 220
+text = "🤫"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 100
+
+[node name="MissionLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 0
+offset_top = 228
+offset_right = 390
+offset_bottom = 278
+text = "MISSION COMPLETE"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 26
+modulate = Color(0.4, 1.0, 0.5, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 40
+offset_top = 295
+offset_right = 350
+offset_bottom = 760
+theme_override_constants/separation = 18
+
+[node name="StarsLabel" type="Label" parent="VBox"]
+text = "⭐⭐⭐\nGHOST MODE 👻"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+modulate = Color(1.0, 0.9, 0.3, 1)
+autowrap_mode = 3
+
+[node name="NoiseLabel" type="Label" parent="VBox"]
+text = "Peak Noise: 0%\nTotal Stars: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.75, 0.9, 0.75, 1)
+
+[node name="Spacer" type="Control" parent="VBox"]
+custom_minimum_size = Vector2(0, 12)
+
+[node name="NextButton" type="Button" parent="VBox"]
+text = "NEXT MISSION  ▶"
+custom_minimum_size = Vector2(0, 60)
+theme_override_font_sizes/font_size = 21
+
+[node name="RetryButton" type="Button" parent="VBox"]
+text = "Play Again"
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 18
+
+[node name="MenuButton" type="Button" parent="VBox"]
+text = "Main Menu"
+custom_minimum_size = Vector2(0, 48)
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.7, 0.7, 0.8, 1)
+
+[node name="ShareButton" type="Button" parent="VBox"]
+text = "🎵 Share Clip"
+custom_minimum_size = Vector2(0, 48)
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.7, 0.85, 1.0, 1)
