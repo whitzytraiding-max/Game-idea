@@ -1,15 +1,23 @@
 ; Engine configuration file.
-; Generated for Don't Wake Dad
-; Godot 4.2+
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="Don't Wake Dad"
 config/description="Sneak through the house. Don't wake Dad."
 run/main_scene="res://scenes/main_menu.tscn"
-config/features=PackedStringArray("4.2", "Mobile")
+config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -24,15 +32,14 @@ DifficultyManager="*res://autoload/DifficultyManager.gd"
 window/size/viewport_width=390
 window/size/viewport_height=844
 window/size/resizable=false
-window/handheld/orientation=1
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/handheld/orientation=1
 
 [input]
 
 tap_move={
 "deadzone": 0.5,
-"events": [Object(InputEventScreenTouch,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"pressure":0.0,"pen_inverted":false,"pressed":false,"index":0,"script":null)
+"events": [Object(InputEventScreenTouch,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"index":0,"position":Vector2(0, 0),"canceled":false,"pressed":false,"double_tap":false,"script":null)
 ]
 }
 

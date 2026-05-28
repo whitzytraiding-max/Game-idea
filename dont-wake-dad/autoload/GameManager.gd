@@ -10,7 +10,7 @@ const SCENE_GAME      := "res://scenes/game.tscn"
 const SCENE_WIN       := "res://scenes/win_screen.tscn"
 const SCENE_LOSE      := "res://scenes/lose_screen.tscn"
 
-const OBJECTIVES := [
+const OBJECTIVES: Array = [
 	"Get a snack from the kitchen",
 	"Charge your phone",
 	"Steal the TV remote",
@@ -23,7 +23,7 @@ const OBJECTIVES := [
 	"Return the dog to his bed",
 ]
 
-const LEVEL_SCENES := [
+const LEVEL_SCENES: Array = [
 	"res://levels/level_1.tscn",
 	"res://levels/level_2.tscn",
 ]

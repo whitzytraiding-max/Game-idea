@@ -14,8 +14,8 @@ func _ready() -> void:
 	_start_ambient_flicker()
 
 func _refresh_ui() -> void:
-	var obj_pool := GameManager.OBJECTIVES
-	var preview := obj_pool[randi() % obj_pool.size()]
+	var obj_pool: Array = GameManager.OBJECTIVES
+	var preview: String = obj_pool[randi() % obj_pool.size()]
 	if _mission_label:
 		_mission_label.text = "Tonight:\n\"" + preview + "\""
 	if _stars_label:
