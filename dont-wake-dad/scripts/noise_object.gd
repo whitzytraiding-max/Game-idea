@@ -27,6 +27,11 @@ func _on_body_entered(body: Node) -> void:
 	NoiseMeter.add_noise(noise_value)
 	noise_triggered.emit(noise_value, object_type)
 	_play_feedback()
+	# Shake camera proportional to noise — Lego hits hardest
+	if noise_value >= 50.0:
+		var games := get_tree().get_nodes_in_group("game")
+		if games.size() > 0:
+			games[0].add_screen_shake(noise_value / 100.0 * 0.65)
 
 func _play_feedback() -> void:
 	if _audio and _audio.stream:

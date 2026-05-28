@@ -107,3 +107,15 @@ offset_bottom = 580
 text = "Give Up"
 theme_override_font_sizes/font_size = 17
 modulate = Color(0.55, 0.55, 0.55, 1)
+
+; Noise-reactive red vignette — alpha controlled by game.gd
+[node name="NoiseVignette" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="VignetteRect" type="ColorRect" parent="NoiseVignette"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.8, 0.0, 0.0, 0.0)
+mouse_filter = 2

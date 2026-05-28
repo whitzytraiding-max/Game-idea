@@ -35,11 +35,13 @@ func _update_bar(value: float) -> void:
 func _trigger_pulse() -> void:
 	if _pulse_tween and _pulse_tween.is_running():
 		return
-	_pulse_tween = create_tween().set_loops(3)
-	_pulse_tween.tween_property(_noise_bar, "scale", Vector2(1.04, 1.2), 0.12)
-	_pulse_tween.tween_property(_noise_bar, "scale", Vector2(1.0, 1.0), 0.12)
+	var loops := 5 if NoiseMeter.get_percentage() > 90.0 else 3
+	_pulse_tween = create_tween().set_loops(loops)
+	_pulse_tween.tween_property(_noise_bar, "scale", Vector2(1.05, 1.25), 0.10)
+	_pulse_tween.tween_property(_noise_bar, "scale", Vector2(1.0, 1.0), 0.10)
 	if OS.has_feature("mobile"):
-		Input.vibrate_handheld(80)
+		var intensity := 150 if NoiseMeter.get_percentage() > 90.0 else 80
+		Input.vibrate_handheld(intensity)
 
 func _update_dad_status(value: float) -> void:
 	if not _dad_status:

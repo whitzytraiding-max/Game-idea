@@ -1,19 +1,25 @@
 extends Node2D
 
-@onready var _level_container: Node2D = $LevelContainer
-@onready var _player: CharacterBody2D = $Player
-@onready var _dad: CharacterBody2D = $Dad
-@onready var _camera: Camera2D = $Camera2D
-@onready var _hud: CanvasLayer = $HUD
+@onready var _level_container: Node2D    = $LevelContainer
+@onready var _player: CharacterBody2D   = $Player
+@onready var _dad: CharacterBody2D      = $Dad
+@onready var _camera: Camera2D          = $Camera2D
+@onready var _hud: CanvasLayer          = $HUD
 @onready var _caught_overlay: CanvasLayer = $CaughtOverlay
-@onready var _light_flicker: ColorRect = $LightFlicker
+@onready var _light_flicker: ColorRect  = $LightFlicker
+@onready var _noise_vignette: ColorRect = $NoiseVignette/VignetteRect
 
 var _current_level: Node = null
 var _hide_spots: Array = []
 var _checkpoint_position: Vector2 = Vector2.ZERO
 var _player_start_position: Vector2 = Vector2.ZERO
 
+# Trauma-based screen shake: shake intensity = trauma²
+var _shake_trauma: float = 0.0
+var _vignette_alpha: float = 0.0
+
 func _ready() -> void:
+	add_to_group("game")
 	_load_level()
 	GameManager.start_run()
 	_player.player_caught.connect(_on_player_caught)
@@ -65,13 +71,17 @@ func _get_nodes_in_group_from(root: Node, group: String) -> Array:
 		result.append_array(_get_nodes_in_group_from(child, group))
 	return result
 
-func _process(_delta: float) -> void:
-	_camera.position = _player.global_position
+func _process(delta: float) -> void:
+	# Smooth camera follow with lerp
+	_camera.global_position = _camera.global_position.lerp(
+		_player.global_position, min(delta * 7.0, 1.0)
+	)
 	_clamp_camera()
 	_update_checkpoint()
+	_update_shake(delta)
+	_update_noise_vignette(delta)
 
 func _update_checkpoint() -> void:
-	# Save checkpoint as player moves deeper into the level (lower y = closer to goal)
 	if _player.global_position.y < _checkpoint_position.y - 80:
 		_checkpoint_position = _player.global_position
 
@@ -82,16 +92,42 @@ func _clamp_camera() -> void:
 	var level_h: float = bg.size.y if bg else 1400.0
 	var hw := 390.0 * 0.5
 	var hh := 844.0 * 0.5
-	_camera.position.x = clamp(_camera.position.x, hw, 390.0 - hw)
-	_camera.position.y = clamp(_camera.position.y, hh, level_h - hh)
+	_camera.global_position.x = clamp(_camera.global_position.x, hw, 390.0 - hw)
+	_camera.global_position.y = clamp(_camera.global_position.y, hh, level_h - hh)
+
+func _update_shake(delta: float) -> void:
+	if _shake_trauma > 0.0:
+		_shake_trauma = max(_shake_trauma - delta * 1.8, 0.0)
+		var shake := _shake_trauma * _shake_trauma
+		_camera.offset = Vector2(
+			randf_range(-1.0, 1.0) * 14.0 * shake,
+			randf_range(-1.0, 1.0) * 14.0 * shake
+		)
+	else:
+		_camera.offset = Vector2.ZERO
+
+func add_screen_shake(trauma: float) -> void:
+	_shake_trauma = min(_shake_trauma + trauma, 1.0)
+
+func _update_noise_vignette(delta: float) -> void:
+	if not _noise_vignette:
+		return
+	var noise_pct := NoiseMeter.get_percentage() / 100.0
+	var target_alpha := 0.0
+	if noise_pct > 0.5:
+		target_alpha = (noise_pct - 0.5) * 2.0 * 0.38
+	if noise_pct > 0.85:
+		target_alpha += sin(Time.get_ticks_msec() * 0.006) * 0.09
+	_vignette_alpha = lerpf(_vignette_alpha, target_alpha, delta * 4.0)
+	_noise_vignette.modulate = Color(1.0, 0.05, 0.05, clamp(_vignette_alpha, 0.0, 0.5))
 
 # ─── CAUGHT FLOW ─────────────────────────────────────────────────────────────
 
 func _on_player_caught() -> void:
+	add_screen_shake(0.9)
 	get_tree().paused = true
 	if _caught_overlay:
 		_caught_overlay.visible = true
-		# Hide extra life button if already used twice
 		_caught_overlay.get_node("ExtraLifeButton").visible = GameManager.revives_used_this_run < 2
 
 func _on_give_up() -> void:
@@ -100,9 +136,6 @@ func _on_give_up() -> void:
 	_trigger_game_over()
 
 func _on_extra_life() -> void:
-	# TODO: show real AdMob rewarded ad here
-	# Wire your AdMob reward callback to call _grant_extra_life()
-	# For now grants immediately — remove this line in production:
 	_grant_extra_life()
 
 func _grant_extra_life() -> void:
@@ -112,20 +145,14 @@ func _grant_extra_life() -> void:
 	_play_phone_distraction()
 
 func _play_phone_distraction() -> void:
-	# Dad's phone rings — he stops, looks confused, walks back
 	NoiseMeter.deactivate()
 	_dad.set_state(_dad.State.RETURNING)
-
-	# Show funny distraction label on Dad
 	var label := Label.new()
 	label.text = "📱 ..."
-	label.theme_override_font_sizes = {"font_size": 20}
+	label.add_theme_font_size_override("font_size", 20)
 	label.position = _dad.global_position + Vector2(-20, -50)
 	_current_level.add_child(label)
-
 	await get_tree().create_timer(2.0).timeout
-
-	# Respawn player at last checkpoint, reset noise
 	_player.respawn_at(_checkpoint_position)
 	NoiseMeter.reset(40.0)
 	NoiseMeter.activate()
@@ -140,6 +167,7 @@ func _trigger_game_over() -> void:
 
 func _on_dad_woke_up() -> void:
 	_flash_lights()
+	add_screen_shake(0.75)
 	for spot in _hide_spots:
 		if spot.has_method("glow_for_dad"):
 			spot.glow_for_dad()
@@ -154,7 +182,7 @@ func _flash_lights() -> void:
 		return
 	var tween := create_tween()
 	for i in range(6):
-		tween.tween_property(_light_flicker, "modulate:a", 0.6, 0.05)
+		tween.tween_property(_light_flicker, "modulate:a", 0.7, 0.05)
 		tween.tween_property(_light_flicker, "modulate:a", 0.0, 0.05)
 
 # ─── RANDOM EVENTS ───────────────────────────────────────────────────────────
@@ -171,6 +199,8 @@ func _on_event_fired(event_name: String, _data: Dictionary) -> void:
 				NoiseMeter.reset(max(NoiseMeter.current_noise - 20, 0))
 		"lego_spawn":
 			_spawn_random_lego()
+		"dog_bark", "microwave_beep":
+			add_screen_shake(0.22)
 
 func _spawn_random_lego() -> void:
 	if not _current_level:

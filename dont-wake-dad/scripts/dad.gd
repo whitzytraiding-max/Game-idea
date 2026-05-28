@@ -150,30 +150,38 @@ func set_state(new_state: State) -> void:
 	_update_visuals()
 
 func _update_visuals() -> void:
+	var tween := create_tween().set_ease(Tween.EASE_OUT)
 	match state:
 		State.SLEEPING:
-			_visual.color = Color(0.6, 0.2, 0.2, 1.0)
-			if _stir_label:
-				_stir_label.visible = false
-		State.STIRRING:
-			_visual.color = Color(0.8, 0.4, 0.1, 1.0)
+			tween.tween_property(_visual, "color", Color(0.35, 0.1, 0.08, 1.0), 0.4)
 			if _stir_label:
 				_stir_label.visible = true
-				_stir_label.text = "..."
+				_stir_label.text = "z z z"
+				_stir_label.modulate = Color(0.6, 0.8, 1.0, 0.75)
+		State.STIRRING:
+			tween.tween_property(_visual, "color", Color(0.7, 0.35, 0.05, 1.0), 0.2)
+			if _stir_label:
+				_stir_label.visible = true
+				_stir_label.text = "...?"
+				_stir_label.modulate = Color(1.0, 0.8, 0.3, 1.0)
 		State.CHASING:
-			_visual.color = Color(1.0, 0.1, 0.1, 1.0)
+			tween.tween_property(_visual, "color", Color(1.0, 0.08, 0.05, 1.0), 0.1)
 			if _stir_label:
 				_stir_label.visible = true
 				_stir_label.text = "!!!"
+				_stir_label.modulate = Color(1.0, 0.2, 0.2, 1.0)
 		State.SEARCHING:
-			_visual.color = Color(0.9, 0.3, 0.1, 1.0)
+			tween.tween_property(_visual, "color", Color(0.85, 0.25, 0.08, 1.0), 0.25)
 			if _stir_label:
 				_stir_label.visible = true
 				_stir_label.text = "?"
+				_stir_label.modulate = Color(1.0, 0.6, 0.2, 1.0)
 		State.RETURNING:
-			_visual.color = Color(0.5, 0.2, 0.2, 1.0)
+			tween.tween_property(_visual, "color", Color(0.4, 0.12, 0.1, 1.0), 0.5)
 			if _stir_label:
-				_stir_label.visible = false
+				_stir_label.visible = true
+				_stir_label.text = "hmph..."
+				_stir_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
 
 func _on_catch_area_body_entered(body: Node) -> void:
 	if body.is_in_group("player") and state == State.CHASING:
