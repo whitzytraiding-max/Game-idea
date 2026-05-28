@@ -5,13 +5,13 @@ extends Node2D
 @onready var _dad: CharacterBody2D = $Dad
 @onready var _camera: Camera2D = $Camera2D
 @onready var _hud: CanvasLayer = $HUD
-@onready var _revive_overlay: CanvasLayer = $ReviveOverlay
+@onready var _caught_overlay: CanvasLayer = $CaughtOverlay
 @onready var _light_flicker: ColorRect = $LightFlicker
 
 var _current_level: Node = null
-var _revive_timer: float = 0.0
-var _is_revive_pending: bool = false
 var _hide_spots: Array = []
+var _checkpoint_position: Vector2 = Vector2.ZERO
+var _player_start_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	_load_level()
@@ -21,14 +21,10 @@ func _ready() -> void:
 	_dad.dad_returned_to_bed.connect(_on_dad_returned)
 	EventManager.event_fired.connect(_on_event_fired)
 	_dad.player = _player
-	if _revive_overlay:
-		_revive_overlay.visible = false
-		var revive_btn = _revive_overlay.get_node_or_null("ReviveButton")
-		var no_btn     = _revive_overlay.get_node_or_null("NoReviveButton")
-		if revive_btn:
-			revive_btn.pressed.connect(_on_revive_button_pressed)
-		if no_btn:
-			no_btn.pressed.connect(_on_no_revive_button_pressed)
+	if _caught_overlay:
+		_caught_overlay.visible = false
+		_caught_overlay.get_node("GiveUpButton").pressed.connect(_on_give_up)
+		_caught_overlay.get_node("ExtraLifeButton").pressed.connect(_on_extra_life)
 
 func _load_level() -> void:
 	var level_scene := load(GameManager.get_current_level_scene())
@@ -45,6 +41,8 @@ func _position_entities() -> void:
 	if player_start:
 		_player.global_position = player_start.global_position
 		_player.target_position = player_start.global_position
+		_player_start_position  = player_start.global_position
+		_checkpoint_position    = player_start.global_position
 	if dad_start:
 		_dad.global_position = dad_start.global_position
 		_dad.bed_position    = dad_start.global_position
@@ -67,69 +65,78 @@ func _get_nodes_in_group_from(root: Node, group: String) -> Array:
 		result.append_array(_get_nodes_in_group_from(child, group))
 	return result
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	_camera.position = _player.global_position
 	_clamp_camera()
-	if _is_revive_pending:
-		_revive_timer -= delta
-		if _revive_overlay:
-			var countdown_label: Label = _revive_overlay.get_node_or_null("CountdownLabel")
-			if countdown_label:
-				countdown_label.text = str(ceili(_revive_timer))
-		if _revive_timer <= 0.0:
-			_decline_revive()
+	_update_checkpoint()
+
+func _update_checkpoint() -> void:
+	# Save checkpoint as player moves deeper into the level (lower y = closer to goal)
+	if _player.global_position.y < _checkpoint_position.y - 80:
+		_checkpoint_position = _player.global_position
 
 func _clamp_camera() -> void:
 	if not _current_level:
 		return
-	var level_size: Vector2 = _current_level.get_node_or_null("Background") and \
-		_current_level.get_node("Background").size or Vector2(390, 1400)
+	var bg = _current_level.get_node_or_null("Background")
+	var level_h: float = bg.size.y if bg else 1400.0
 	var hw := 390.0 * 0.5
 	var hh := 844.0 * 0.5
-	_camera.position.x = clamp(_camera.position.x, hw, level_size.x - hw)
-	_camera.position.y = clamp(_camera.position.y, hh, level_size.y - hh)
+	_camera.position.x = clamp(_camera.position.x, hw, 390.0 - hw)
+	_camera.position.y = clamp(_camera.position.y, hh, level_h - hh)
+
+# ─── CAUGHT FLOW ─────────────────────────────────────────────────────────────
 
 func _on_player_caught() -> void:
-	if GameManager.revives_used_this_run < 2:
-		_show_revive_prompt()
-	else:
-		_trigger_game_over()
+	get_tree().paused = true
+	if _caught_overlay:
+		_caught_overlay.visible = true
+		# Hide extra life button if already used twice
+		_caught_overlay.get_node("ExtraLifeButton").visible = GameManager.revives_used_this_run < 2
 
-func _show_revive_prompt() -> void:
-	_is_revive_pending = true
-	_revive_timer = 4.0
-	Engine.time_scale = 0.15
-	if _revive_overlay:
-		_revive_overlay.visible = true
-
-func _on_revive_accepted() -> void:
-	Engine.time_scale = 1.0
-	_is_revive_pending = false
-	if _revive_overlay:
-		_revive_overlay.visible = false
-	if GameManager.use_revive():
-		var nearest := _find_nearest_hide_spot()
-		if nearest:
-			_player.respawn_at(nearest.global_position)
-		else:
-			_player.respawn_at(_player.global_position + Vector2(0, -60))
-		_dad.set_state(_dad.State.RETURNING)
-
-func _on_revive_declined() -> void:
-	_decline_revive()
-
-func _decline_revive() -> void:
-	Engine.time_scale = 1.0
-	_is_revive_pending = false
-	if _revive_overlay:
-		_revive_overlay.visible = false
+func _on_give_up() -> void:
+	get_tree().paused = false
+	_caught_overlay.visible = false
 	_trigger_game_over()
 
+func _on_extra_life() -> void:
+	# TODO: show real AdMob rewarded ad here
+	# Wire your AdMob reward callback to call _grant_extra_life()
+	# For now grants immediately — remove this line in production:
+	_grant_extra_life()
+
+func _grant_extra_life() -> void:
+	get_tree().paused = false
+	_caught_overlay.visible = false
+	GameManager.use_revive()
+	_play_phone_distraction()
+
+func _play_phone_distraction() -> void:
+	# Dad's phone rings — he stops, looks confused, walks back
+	NoiseMeter.deactivate()
+	_dad.set_state(_dad.State.RETURNING)
+
+	# Show funny distraction label on Dad
+	var label := Label.new()
+	label.text = "📱 ..."
+	label.theme_override_font_sizes = {"font_size": 20}
+	label.position = _dad.global_position + Vector2(-20, -50)
+	_current_level.add_child(label)
+
+	await get_tree().create_timer(2.0).timeout
+
+	# Respawn player at last checkpoint, reset noise
+	_player.respawn_at(_checkpoint_position)
+	NoiseMeter.reset(40.0)
+	NoiseMeter.activate()
+	label.queue_free()
+
 func _trigger_game_over() -> void:
-	var total: float = 1400.0
-	var player_y: float = _player.global_position.y
-	var pct: float = clamp(((total - player_y) / total) * 100.0, 5.0, 99.0)
+	var level_h := 1400.0
+	var pct := clamp(((level_h - _player.global_position.y) / level_h) * 100.0, 5.0, 99.0)
 	GameManager.fail_run(pct)
+
+# ─── DAD EVENTS ──────────────────────────────────────────────────────────────
 
 func _on_dad_woke_up() -> void:
 	_flash_lights()
@@ -149,6 +156,8 @@ func _flash_lights() -> void:
 	for i in range(6):
 		tween.tween_property(_light_flicker, "modulate:a", 0.6, 0.05)
 		tween.tween_property(_light_flicker, "modulate:a", 0.0, 0.05)
+
+# ─── RANDOM EVENTS ───────────────────────────────────────────────────────────
 
 func _on_event_fired(event_name: String, _data: Dictionary) -> void:
 	match event_name:
@@ -172,23 +181,8 @@ func _spawn_random_lego() -> void:
 	var lego: Area2D = lego_scene.instantiate()
 	lego.noise_value = 75.0
 	lego.object_type = "lego"
-	var px := randf_range(80, 310)
-	var player_y := _player.global_position.y
-	lego.global_position = Vector2(px, player_y - randf_range(80, 200))
+	lego.global_position = Vector2(
+		randf_range(80, 310),
+		_player.global_position.y - randf_range(80, 200)
+	)
 	_current_level.add_child(lego)
-
-func _find_nearest_hide_spot() -> Node:
-	var nearest: Node = null
-	var best_dist := INF
-	for spot in _hide_spots:
-		var d := _player.global_position.distance_to(spot.global_position)
-		if d < best_dist:
-			best_dist = d
-			nearest = spot
-	return nearest
-
-func _on_revive_button_pressed() -> void:
-	_on_revive_accepted()
-
-func _on_no_revive_button_pressed() -> void:
-	_on_revive_declined()

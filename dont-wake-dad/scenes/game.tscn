@@ -41,66 +41,69 @@ mouse_filter = 2
 ; HUD canvas layer
 [node name="HUD" type="CanvasLayer" parent="." instance=ExtResource("4_hud")]
 
-; Revive overlay
-[node name="ReviveOverlay" type="CanvasLayer" parent="."]
+; Caught overlay — clean binary choice
+[node name="CaughtOverlay" type="CanvasLayer" parent="."]
 layer = 100
 visible = false
 
-[node name="BG" type="ColorRect" parent="ReviveOverlay"]
+[node name="BG" type="ColorRect" parent="CaughtOverlay"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.75)
+color = Color(0, 0, 0, 0.82)
 mouse_filter = 0
 
-[node name="DadFaceLabel" type="Label" parent="ReviveOverlay"]
+[node name="DadFace" type="Label" parent="CaughtOverlay"]
 layout_mode = 0
 offset_left = 0
-offset_top = 200
+offset_top = 160
 offset_right = 390
-offset_bottom = 320
+offset_bottom = 300
 text = "😡"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 90
+theme_override_font_sizes/font_size = 100
 
-[node name="HeadlineLabel" type="Label" parent="ReviveOverlay"]
+[node name="CaughtLabel" type="Label" parent="CaughtOverlay"]
 layout_mode = 0
 offset_left = 0
-offset_top = 320
+offset_top = 305
 offset_right = 390
-offset_bottom = 375
-text = "DAD'S COMING!"
+offset_bottom = 360
+text = "DAD CAUGHT YOU"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 26
-modulate = Color(1, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+modulate = Color(1.0, 0.2, 0.2, 1)
 
-[node name="CountdownLabel" type="Label" parent="ReviveOverlay"]
+[node name="SubLabel" type="Label" parent="CaughtOverlay"]
 layout_mode = 0
 offset_left = 0
-offset_top = 380
+offset_top = 365
 offset_right = 390
-offset_bottom = 430
-text = "4"
+offset_bottom = 400
+text = "What do you want to do?"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 22
-modulate = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.75, 0.75, 0.75, 1)
 
-[node name="ReviveButton" type="Button" parent="ReviveOverlay"]
+; Primary action — extra life via ad
+[node name="ExtraLifeButton" type="Button" parent="CaughtOverlay"]
 layout_mode = 0
-offset_left = 40
-offset_top = 455
-offset_right = 350
-offset_bottom = 525
-text = "📺  HIDE! (Watch Ad)"
-theme_override_font_sizes/font_size = 20
+offset_left = 30
+offset_top = 430
+offset_right = 360
+offset_bottom = 510
+text = "📺  Watch Ad = Extra Life"
+theme_override_font_sizes/font_size = 21
+modulate = Color(1.0, 0.9, 0.2, 1)
 
-[node name="NoReviveButton" type="Button" parent="ReviveOverlay"]
+; Secondary — give up
+[node name="GiveUpButton" type="Button" parent="CaughtOverlay"]
 layout_mode = 0
 offset_left = 100
-offset_top = 545
+offset_top = 530
 offset_right = 290
-offset_bottom = 590
-text = "I give up 😔"
-theme_override_font_sizes/font_size = 15
-modulate = Color(0.6, 0.6, 0.6, 1)
+offset_bottom = 580
+text = "Give Up"
+theme_override_font_sizes/font_size = 17
+modulate = Color(0.55, 0.55, 0.55, 1)
