@@ -1,6 +1,0 @@
-res://autoload/GameManager.gd
-res://scripts/dad.gd
-res://scripts/game.gd
-res://scripts/hud.gd
-res://scripts/main_menu.gd
-res://scripts/noise_object.gd

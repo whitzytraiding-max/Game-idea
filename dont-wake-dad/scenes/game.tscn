@@ -119,3 +119,53 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.8, 0.0, 0.0, 0.0)
 mouse_filter = 2
+
+; Jump scare overlay — shown briefly when dad wakes up
+[node name="JumpScare" type="CanvasLayer" parent="."]
+layer = 50
+visible = false
+
+[node name="BG" type="ColorRect" parent="JumpScare"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+mouse_filter = 2
+
+[node name="DadFaceLabel" type="Label" parent="JumpScare"]
+layout_mode = 0
+offset_left = 0
+offset_top = 280
+offset_right = 390
+offset_bottom = 450
+text = "😡"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 130
+
+[node name="JumpText" type="Label" parent="JumpScare"]
+layout_mode = 0
+offset_left = 0
+offset_top = 460
+offset_right = 390
+offset_bottom = 510
+text = "DAD IS COMING"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+modulate = Color(1.0, 0.1, 0.1, 1)
+
+; Ambient background loop
+[node name="AmbiencePlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -18.0
+autoplay = false
+
+; Heartbeat — rises with noise level
+[node name="HeartbeatPlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -40.0
+autoplay = false
+
+; Chase music — triggered on dad wake
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -24.0
+autoplay = false

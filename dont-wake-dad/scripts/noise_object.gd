@@ -17,6 +17,21 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	if _visual:
 		_original_color = _visual.color
+	_load_audio()
+
+func _load_audio() -> void:
+	if not _audio:
+		return
+	var path: String
+	match object_type:
+		"lego":   path = "res://audio/sfx/lego_crunch.wav"
+		"dog":    path = "res://audio/sfx/dog_bump.wav"
+		"fridge": path = "res://audio/sfx/creak.wav"
+		"floor":  path = "res://audio/sfx/creak.wav"
+		_:        path = "res://audio/sfx/lego_crunch.wav"
+	var s: Resource = load(path)
+	if s:
+		_audio.stream = s
 
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("player"):

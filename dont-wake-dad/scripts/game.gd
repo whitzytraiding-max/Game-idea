@@ -8,6 +8,11 @@ extends Node2D
 @onready var _caught_overlay: CanvasLayer = $CaughtOverlay
 @onready var _light_flicker: ColorRect  = $LightFlicker
 @onready var _noise_vignette: ColorRect = $NoiseVignette/VignetteRect
+@onready var _jump_scare: CanvasLayer   = $JumpScare
+@onready var _dad_face_label: Label     = $JumpScare/DadFaceLabel
+@onready var _ambience_player: AudioStreamPlayer = $AmbiencePlayer
+@onready var _heartbeat_player: AudioStreamPlayer = $HeartbeatPlayer
+@onready var _music_player: AudioStreamPlayer = $MusicPlayer
 
 var _current_level: Node = null
 var _hide_spots: Array = []
@@ -31,6 +36,30 @@ func _ready() -> void:
 		_caught_overlay.visible = false
 		_caught_overlay.get_node("GiveUpButton").pressed.connect(_on_give_up)
 		_caught_overlay.get_node("ExtraLifeButton").pressed.connect(_on_extra_life)
+	# Load and start ambient audio
+	_load_audio()
+	if _ambience_player and _ambience_player.stream:
+		_ambience_player.play()
+
+func _load_audio() -> void:
+	var amb: Resource = load("res://audio/ambient/tense_ambient.wav")
+	if amb and _ambience_player:
+		_ambience_player.stream = amb
+		_ambience_player.finished.connect(func():
+			if _ambience_player: _ambience_player.play()
+		)
+	var hb: Resource = load("res://audio/ambient/heartbeat.wav")
+	if hb and _heartbeat_player:
+		_heartbeat_player.stream = hb
+		_heartbeat_player.finished.connect(func():
+			if _heartbeat_player and _heartbeat_player.playing: _heartbeat_player.play()
+		)
+	var music: Resource = load("res://audio/ambient/chase_music.wav")
+	if music and _music_player:
+		_music_player.stream = music
+		_music_player.finished.connect(func():
+			if _music_player and _music_player.playing: _music_player.play()
+		)
 
 func _load_level() -> void:
 	var level_scene: Resource = load(GameManager.get_current_level_scene())
@@ -120,6 +149,16 @@ func _update_noise_vignette(delta: float) -> void:
 		target_alpha += sin(Time.get_ticks_msec() * 0.006) * 0.09
 	_vignette_alpha = lerpf(_vignette_alpha, target_alpha, delta * 4.0)
 	_noise_vignette.modulate = Color(1.0, 0.05, 0.05, clamp(_vignette_alpha, 0.0, 0.5))
+	# Heartbeat rises with noise
+	if _heartbeat_player and _heartbeat_player.stream:
+		var noise_pct2: float = NoiseMeter.get_percentage() / 100.0
+		if noise_pct2 > 0.4:
+			if not _heartbeat_player.playing:
+				_heartbeat_player.play()
+			_heartbeat_player.volume_db = lerpf(-40.0, -8.0, (noise_pct2 - 0.4) / 0.6)
+			_heartbeat_player.pitch_scale = lerpf(0.8, 1.5, (noise_pct2 - 0.4) / 0.6)
+		else:
+			_heartbeat_player.stop()
 
 # ─── CAUGHT FLOW ─────────────────────────────────────────────────────────────
 
@@ -166,16 +205,64 @@ func _trigger_game_over() -> void:
 # ─── DAD EVENTS ──────────────────────────────────────────────────────────────
 
 func _on_dad_woke_up() -> void:
+	_play_jump_scare()
 	_flash_lights()
 	add_screen_shake(0.75)
 	for spot in _hide_spots:
 		if spot.has_method("glow_for_dad"):
 			spot.glow_for_dad()
 
+func _play_jump_scare() -> void:
+	# 1. Silence ambient/heartbeat
+	if _ambience_player:
+		_ambience_player.volume_db = -80
+	if _heartbeat_player:
+		_heartbeat_player.stop()
+
+	# 2. Play door slam — loaded dynamically so it hits at full volume
+	var slam_stream: Resource = load("res://audio/sfx/door_slam.wav")
+	if slam_stream:
+		var slam := AudioStreamPlayer.new()
+		slam.stream = slam_stream
+		slam.volume_db = 6.0
+		add_child(slam)
+		slam.play()
+		slam.finished.connect(slam.queue_free)
+
+	# 3. Brief pre-flash darkness (0.1s silence)
+	await get_tree().create_timer(0.1).timeout
+
+	# 4. Show dad's face full-screen
+	if _jump_scare:
+		_jump_scare.visible = true
+		_jump_scare.modulate = Color(1, 1, 1, 1)
+
+	# 5. Hold for terror (0.7s)
+	await get_tree().create_timer(0.7).timeout
+
+	# 6. Fade out jump scare overlay
+	if _jump_scare:
+		var tween := create_tween()
+		tween.tween_property(_jump_scare, "modulate:a", 0.0, 0.3)
+		tween.tween_callback(func(): if _jump_scare: _jump_scare.visible = false)
+
+	# 7. Chase music slams in
+	if _music_player and _music_player.stream:
+		_music_player.volume_db = -18
+		_music_player.play()
+
 func _on_dad_returned() -> void:
 	for spot in _hide_spots:
 		if spot.has_method("stop_glow"):
 			spot.stop_glow()
+	# Fade chase music out
+	if _music_player and _music_player.playing:
+		var tween := create_tween()
+		tween.tween_property(_music_player, "volume_db", -80.0, 2.0)
+		tween.tween_callback(func(): _music_player.stop())
+	# Restore ambience
+	if _ambience_player and _ambience_player.stream:
+		_ambience_player.volume_db = -18
 
 func _flash_lights() -> void:
 	if not _light_flicker:

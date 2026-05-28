@@ -35,7 +35,25 @@ func _ready() -> void:
 	_catch_area.body_entered.connect(_on_catch_area_body_entered)
 	if _eye_glow:
 		_eye_glow.enabled = false
+	_load_audio()
 	if _snore_audio and _snore_audio.stream:
+		_snore_audio.play()
+
+func _load_audio() -> void:
+	var snore: Resource = load("res://audio/dad/dad_snore.wav")
+	if snore and _snore_audio:
+		_snore_audio.stream = snore
+		# Loop snoring by reconnecting on finish
+		_snore_audio.finished.connect(_on_snore_finished)
+	var yell: Resource = load("res://audio/dad/dad_yell.wav")
+	if yell and _yell_audio:
+		_yell_audio.stream = yell
+	var step: Resource = load("res://audio/dad/dad_footstep.wav")
+	if step and _footstep_audio:
+		_footstep_audio.stream = step
+
+func _on_snore_finished() -> void:
+	if (state == State.SLEEPING or state == State.STIRRING) and _snore_audio:
 		_snore_audio.play()
 
 func _physics_process(delta: float) -> void:
@@ -127,6 +145,9 @@ func _enter_chase() -> void:
 	if _yell_audio and _yell_audio.stream:
 		_yell_audio.play()
 	dad_woke_up.emit()
+	var tween := create_tween()
+	tween.tween_property(_visual, "scale", Vector2(1.15, 1.15), 0.2)
+	tween.tween_property(_visual, "scale", Vector2(1.0, 1.0), 0.3)
 
 func _enter_searching() -> void:
 	set_state(State.SEARCHING)

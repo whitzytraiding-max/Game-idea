@@ -18,6 +18,9 @@ func _ready() -> void:
 	body_exited.connect(_on_body_exited)
 	if _label:
 		_label.visible = false
+	var s: Resource = load("res://audio/sfx/success.wav")
+	if s and _audio:
+		_audio.stream = s
 
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("player") or _completed:

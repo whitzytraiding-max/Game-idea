@@ -4,6 +4,7 @@ signal noise_changed(value: float)
 signal dad_should_stir
 signal dad_should_wake
 signal dad_can_sleep
+signal big_noise_spike(value: float)
 
 var current_noise: float = 0.0
 var max_noise: float = 100.0
@@ -31,6 +32,8 @@ func add_noise(value: float) -> void:
 	if current_noise > _peak_noise_this_run:
 		_peak_noise_this_run = current_noise
 	noise_changed.emit(current_noise)
+	if value >= 50.0:
+		big_noise_spike.emit(value)
 	if current_noise >= 100.0:
 		dad_should_wake.emit()
 	elif current_noise >= 80.0:
