@@ -22,10 +22,8 @@ var is_caught: bool = false
 var floor_noise_value: float = 20.0
 
 var _dist_since_last_step: float = 0.0
-var _touch_start_time: float = 0.0
-var _touch_holding: bool = false
-var _touch_start_pos: Vector2 = Vector2.ZERO
 var _step_count: int = 0
+var _joystick: Control = null
 
 # Cached audio streams — loaded once in _ready()
 var _stream_carpet: AudioStream = null
@@ -39,6 +37,13 @@ func _ready() -> void:
 	_interaction_area.area_entered.connect(_on_floor_zone_entered)
 	_interaction_area.area_exited.connect(_on_floor_zone_exited)
 	_load_audio()
+	# Find joystick after scene is fully loaded
+	call_deferred("_find_joystick")
+
+func _find_joystick() -> void:
+	var nodes := get_tree().get_nodes_in_group("joystick")
+	if nodes.size() > 0:
+		_joystick = nodes[0]
 
 func _load_audio() -> void:
 	_stream_carpet = load("res://audio/footsteps/step_carpet.wav")
@@ -56,52 +61,36 @@ func _on_floor_zone_entered(area: Area2D) -> void:
 func _on_floor_zone_exited(_area: Area2D) -> void:
 	floor_noise_value = 20.0
 
-func _unhandled_input(event: InputEvent) -> void:
+func _physics_process(_delta: float) -> void:
 	if is_caught or is_hiding:
-		return
-	if event is InputEventScreenTouch:
-		if event.pressed:
-			_touch_start_time = Time.get_ticks_msec() / 1000.0
-			_touch_start_pos = event.position
-			_touch_holding = true
-		else:
-			_touch_holding = false
-			var held: float = Time.get_ticks_msec() / 1000.0 - _touch_start_time
-			is_creeping = held > 0.35
-			_set_target_from_screen(event.position)
-	elif event is InputEventScreenDrag:
-		if _touch_holding:
-			is_creeping = true
-			_set_target_from_screen(event.position)
-
-func _set_target_from_screen(screen_pos: Vector2) -> void:
-	var cam := get_viewport().get_camera_2d()
-	if cam:
-		var offset := cam.get_screen_center_position() - Vector2(
-			ProjectSettings.get_setting("display/window/size/viewport_width"),
-			ProjectSettings.get_setting("display/window/size/viewport_height")
-		) * 0.5
-		target_position = screen_pos + offset
-	else:
-		target_position = screen_pos
-
-func _physics_process(delta: float) -> void:
-	if is_caught or is_hiding:
-		velocity = Vector2.ZERO
-		return
-
-	var dist := global_position.distance_to(target_position)
-	if dist < 4.0:
 		velocity = Vector2.ZERO
 		is_moving = false
 		NoiseMeter.player_is_still = true
 		return
 
+	# Read joystick direction
+	var joy_dir := Vector2.ZERO
+	var joy_mag := 0.0
+	if _joystick:
+		joy_dir = _joystick.get("direction")
+		joy_mag = _joystick.get("magnitude")
+
+	if joy_mag < 0.08:
+		velocity = Vector2.ZERO
+		is_moving = false
+		NoiseMeter.player_is_still = true
+		return
+
+	# Small push = creep, full push = walk
+	is_creeping = joy_mag < 0.45
 	is_moving = true
 	NoiseMeter.player_is_still = false
+
 	var speed := CREEP_SPEED if is_creeping else WALK_SPEED
-	var dir := (target_position - global_position).normalized()
-	velocity = dir * speed
+	# Scale speed by magnitude for analog feel
+	speed *= lerpf(0.5, 1.0, joy_mag)
+
+	velocity = joy_dir * speed
 	var prev_pos := global_position
 	move_and_slide()
 
@@ -110,7 +99,8 @@ func _physics_process(delta: float) -> void:
 		_dist_since_last_step = 0.0
 		_emit_step()
 
-	_visual.rotation = dir.angle() + PI * 0.5
+	if joy_dir.length() > 0.1:
+		_visual.rotation = joy_dir.angle() + PI * 0.5
 
 func _emit_step() -> void:
 	var noise: float = floor_noise_value * (0.4 if is_creeping else 1.0)
