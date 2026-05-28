@@ -13,6 +13,7 @@ var _completed: bool = false
 signal objective_completed
 
 func _ready() -> void:
+	add_to_group("objective")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	if _label:

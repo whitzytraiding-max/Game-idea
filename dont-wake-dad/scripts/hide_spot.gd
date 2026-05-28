@@ -12,6 +12,7 @@ signal player_entered_hide_spot
 signal player_exited_hide_spot
 
 func _ready() -> void:
+	add_to_group("hide_spot")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	if _prompt_label:

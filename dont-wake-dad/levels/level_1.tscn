@@ -242,8 +242,8 @@ shape = SubResource("RS_wallBot")
 ; ---- FLOOR NOISE ZONES ----
 [node name="FloorZone_Hardwood" type="Area2D" parent="."]
 position = Vector2(195, 500)
-collision_layer = 0
-collision_mask = 1
+collision_layer = 4
+collision_mask = 0
 metadata/floor_noise = 20.0
 
 [node name="FZH_Col" type="CollisionShape2D" parent="FloorZone_Hardwood"]
@@ -251,8 +251,8 @@ shape = SubResource("RS_floor_wood")
 
 [node name="FloorZone_Carpet_Living" type="Area2D" parent="."]
 position = Vector2(195, 780)
-collision_layer = 0
-collision_mask = 1
+collision_layer = 4
+collision_mask = 0
 metadata/floor_noise = 5.0
 
 [node name="FZC_Col" type="CollisionShape2D" parent="FloorZone_Carpet_Living"]
@@ -260,8 +260,8 @@ shape = SubResource("RS_floor_carpet")
 
 [node name="FloorZone_Tile_Kitchen" type="Area2D" parent="."]
 position = Vector2(195, 190)
-collision_layer = 0
-collision_mask = 1
+collision_layer = 4
+collision_mask = 0
 metadata/floor_noise = 15.0
 
 [node name="FZT_Col" type="CollisionShape2D" parent="FloorZone_Tile_Kitchen"]

@@ -31,6 +31,7 @@ func _ready() -> void:
 	_current_speed = 0.0
 	NoiseMeter.dad_should_stir.connect(_on_should_stir)
 	NoiseMeter.dad_should_wake.connect(_on_should_wake)
+	NoiseMeter.dad_can_sleep.connect(_on_noise_calmed)
 	_catch_area.body_entered.connect(_on_catch_area_body_entered)
 	if _eye_glow:
 		_eye_glow.enabled = false
@@ -97,7 +98,14 @@ func _move_toward(target: Vector2, delta: float, speed_mult: float = 1.0) -> voi
 
 func _on_should_stir() -> void:
 	if state == State.SLEEPING:
+		_stir_timer = DifficultyManager.config["stir_window"]
 		set_state(State.STIRRING)
+
+func _on_noise_calmed() -> void:
+	if state == State.STIRRING:
+		set_state(State.SLEEPING)
+		if _snore_audio and _snore_audio.stream:
+			_snore_audio.play()
 
 func _on_should_wake() -> void:
 	if state == State.SLEEPING or state == State.STIRRING:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dad001"]
+[gd_scene load_steps=7 format=3 uid="uid://dad001"]
 
 [ext_resource type="Script" path="res://scripts/dad.gd" id="1_dad"]
 
@@ -7,6 +7,18 @@ size = Vector2(28, 36)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_catch"]
 radius = 26.0
+
+[sub_resource type="Gradient" id="Gradient_eye"]
+colors = PackedColorArray(1, 0.05, 0.05, 1, 1, 0, 0, 0)
+offsets = PackedFloat32Array(0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradTex_eye"]
+gradient = SubResource("Gradient_eye")
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+fill = 1
+width = 128
+height = 128
 
 [node name="Dad" type="CharacterBody2D"]
 collision_layer = 2
@@ -34,6 +46,7 @@ shape = SubResource("CircleShape2D_catch")
 
 [node name="EyeGlow" type="PointLight2D" parent="."]
 position = Vector2(0, -24)
+texture = SubResource("GradTex_eye")
 color = Color(1, 0.1, 0.05, 1)
 energy = 1.4
 texture_scale = 0.8

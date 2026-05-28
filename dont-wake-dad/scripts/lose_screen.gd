@@ -44,7 +44,7 @@ func _on_share() -> void:
 	var text := "I made it %.0f%% without waking Dad in 'Don't Wake Dad' 😂\n#DontWakeDad" % pct
 	if OS.has_feature("android") or OS.has_feature("ios"):
 		# Native share sheet
-		var image_path := _capture_screenshot()
+		_capture_screenshot()
 		OS.shell_open("share://?text=" + text.uri_encode())
 	else:
 		DisplayServer.clipboard_set(text)
