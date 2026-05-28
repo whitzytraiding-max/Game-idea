@@ -6,12 +6,24 @@ extends Control
 @onready var _title_label: Label   = $TitleLabel
 @onready var _door_light: ColorRect = $DoorLight
 
+@onready var _ambience: AudioStreamPlayer = $AmbiencePlayer
+
 var _flicker_tween: Tween = null
 
 func _ready() -> void:
 	_play_button.pressed.connect(_on_play_pressed)
 	_refresh_ui()
 	_start_ambient_flicker()
+	_start_ambient_audio()
+
+func _start_ambient_audio() -> void:
+	if not _ambience:
+		return
+	var s: Resource = load("res://audio/ambient/house_hum.wav")
+	if s:
+		_ambience.stream = s
+		_ambience.play()
+		_ambience.finished.connect(func(): if _ambience: _ambience.play())
 
 func _refresh_ui() -> void:
 	var obj_pool: Array = GameManager.OBJECTIVES

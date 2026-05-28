@@ -69,6 +69,9 @@ func _load_level() -> void:
 		_position_entities()
 		_collect_hide_spots()
 		_collect_objectives()
+		# Snap camera directly to player on first frame — no lerp lag at start
+		_camera.global_position = _player.global_position
+		_clamp_camera()
 
 func _position_entities() -> void:
 	var player_start: Node = _current_level.get_node_or_null("PlayerStart")
@@ -286,8 +289,23 @@ func _on_event_fired(event_name: String, _data: Dictionary) -> void:
 				NoiseMeter.reset(max(NoiseMeter.current_noise - 20, 0))
 		"lego_spawn":
 			_spawn_random_lego()
-		"dog_bark", "microwave_beep":
+		"dog_bark":
 			add_screen_shake(0.22)
+			_play_oneshot("res://audio/sfx/dog_bump.wav", -4.0)
+		"microwave_beep":
+			add_screen_shake(0.15)
+			_play_oneshot("res://audio/sfx/creak.wav", -8.0)
+
+func _play_oneshot(path: String, vol: float) -> void:
+	var s: Resource = load(path)
+	if not s:
+		return
+	var p := AudioStreamPlayer.new()
+	p.stream = s
+	p.volume_db = vol
+	add_child(p)
+	p.play()
+	p.finished.connect(p.queue_free)
 
 func _spawn_random_lego() -> void:
 	if not _current_level:
