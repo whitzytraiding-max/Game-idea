@@ -33,7 +33,7 @@ func _ready() -> void:
 		_caught_overlay.get_node("ExtraLifeButton").pressed.connect(_on_extra_life)
 
 func _load_level() -> void:
-	var level_scene := load(GameManager.get_current_level_scene())
+	var level_scene: Resource = load(GameManager.get_current_level_scene())
 	if level_scene:
 		_current_level = level_scene.instantiate()
 		_level_container.add_child(_current_level)
@@ -160,7 +160,7 @@ func _play_phone_distraction() -> void:
 
 func _trigger_game_over() -> void:
 	var level_h := 1400.0
-	var pct := clamp(((level_h - _player.global_position.y) / level_h) * 100.0, 5.0, 99.0)
+	var pct: float = clampf(((level_h - _player.global_position.y) / level_h) * 100.0, 5.0, 99.0)
 	GameManager.fail_run(pct)
 
 # ─── DAD EVENTS ──────────────────────────────────────────────────────────────
@@ -205,7 +205,7 @@ func _on_event_fired(event_name: String, _data: Dictionary) -> void:
 func _spawn_random_lego() -> void:
 	if not _current_level:
 		return
-	var lego_scene := load("res://entities/noise_object.tscn")
+	var lego_scene: Resource = load("res://entities/noise_object.tscn")
 	if not lego_scene:
 		return
 	var lego: Area2D = lego_scene.instantiate()

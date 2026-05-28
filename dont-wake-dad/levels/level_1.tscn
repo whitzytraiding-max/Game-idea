@@ -1,10 +1,8 @@
 [gd_scene load_steps=14 format=3 uid="uid://level1001"]
 
-[ext_resource type="PackedScene" path="res://entities/player.tscn" id="1_player"]
-[ext_resource type="PackedScene" path="res://entities/dad.tscn" id="2_dad"]
-[ext_resource type="PackedScene" path="res://entities/noise_object.tscn" id="3_noise"]
-[ext_resource type="PackedScene" path="res://entities/hide_spot.tscn" id="4_hide"]
-[ext_resource type="PackedScene" path="res://entities/objective.tscn" id="5_obj"]
+[ext_resource type="Script" path="res://scripts/noise_object.gd" id="3_noise"]
+[ext_resource type="Script" path="res://scripts/hide_spot.gd" id="4_hide"]
+[ext_resource type="Script" path="res://scripts/objective.gd" id="5_obj"]
 
 ; --- Collision shapes ---
 [sub_resource type="RectangleShape2D" id="RS_wallL"]

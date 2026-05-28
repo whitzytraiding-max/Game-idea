@@ -43,7 +43,7 @@ func stop_events() -> void:
 func _schedule_next() -> void:
 	if not _running:
 		return
-	var interval := randf_range(
+	var interval: float = randf_range(
 		DifficultyManager.config["event_interval_min"],
 		DifficultyManager.config["event_interval_max"]
 	)
@@ -65,7 +65,7 @@ func _weighted_pick(pool: Array) -> Dictionary:
 	var total := 0
 	for e in pool:
 		total += e["weight"]
-	var roll := randi() % total
+	var roll: int = randi() % total
 	var acc := 0
 	for e in pool:
 		acc += e["weight"]
