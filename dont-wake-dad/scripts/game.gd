@@ -239,7 +239,6 @@ func _play_jump_scare() -> void:
 	# 4. Show dad's face full-screen
 	if _jump_scare:
 		_jump_scare.visible = true
-		_jump_scare.modulate = Color(1, 1, 1, 1)
 
 	# 5. Hold for terror (0.7s)
 	await get_tree().create_timer(0.7).timeout
