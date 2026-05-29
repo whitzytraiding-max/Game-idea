@@ -1,15 +1,16 @@
 extends Node2D
 
-@onready var _level_container: Node2D    = $LevelContainer
-@onready var _player: CharacterBody2D   = $Player
-@onready var _dad: CharacterBody2D      = $Dad
-@onready var _camera: Camera2D          = $Camera2D
-@onready var _hud: CanvasLayer          = $HUD
+@onready var _level_container: Node2D     = $LevelContainer
+@onready var _player: CharacterBody2D    = $Player
+@onready var _dad: CharacterBody2D       = $Dad
+@onready var _camera: Camera2D           = $Camera2D
 @onready var _caught_overlay: CanvasLayer = $CaughtOverlay
-@onready var _light_flicker: ColorRect  = $LightFlicker
-@onready var _noise_vignette: ColorRect = $NoiseVignette/VignetteRect
-@onready var _jump_scare: CanvasLayer   = $JumpScare
-@onready var _dad_face_label: Label     = $JumpScare/DadFaceLabel
+@onready var _light_flicker: ColorRect   = $LightFlicker
+@onready var _noise_vignette: ColorRect  = $NoiseVignette/VignetteRect
+@onready var _jump_scare: CanvasLayer    = $JumpScare
+@onready var _jump_scare_bg: ColorRect   = $JumpScare/BG
+@onready var _jump_scare_face: Label     = $JumpScare/DadFaceLabel
+@onready var _jump_scare_text: Label     = $JumpScare/JumpText
 @onready var _ambience_player: AudioStreamPlayer = $AmbiencePlayer
 @onready var _heartbeat_player: AudioStreamPlayer = $HeartbeatPlayer
 @onready var _music_player: AudioStreamPlayer = $MusicPlayer
@@ -243,11 +244,18 @@ func _play_jump_scare() -> void:
 	# 5. Hold for terror (0.7s)
 	await get_tree().create_timer(0.7).timeout
 
-	# 6. Fade out jump scare overlay
+	# 6. Fade out jump scare — CanvasLayer has no modulate, so tween children
 	if _jump_scare:
-		var tween := create_tween()
-		tween.tween_property(_jump_scare, "modulate:a", 0.0, 0.3)
-		tween.tween_callback(func(): if _jump_scare: _jump_scare.visible = false)
+		var tween := create_tween().set_parallel(true)
+		if _jump_scare_bg:   tween.tween_property(_jump_scare_bg,   "modulate:a", 0.0, 0.35)
+		if _jump_scare_face: tween.tween_property(_jump_scare_face, "modulate:a", 0.0, 0.35)
+		if _jump_scare_text: tween.tween_property(_jump_scare_text, "modulate:a", 0.0, 0.35)
+		tween.chain().tween_callback(func():
+			if _jump_scare: _jump_scare.visible = false
+			if _jump_scare_bg:   _jump_scare_bg.modulate   = Color(1,1,1,1)
+			if _jump_scare_face: _jump_scare_face.modulate = Color(1,1,1,1)
+			if _jump_scare_text: _jump_scare_text.modulate = Color(1,1,1,1)
+		)
 
 	# 7. Chase music slams in
 	if _music_player and _music_player.stream:

@@ -101,7 +101,7 @@ func _physics_process(delta: float) -> void:
 				velocity = Vector2.ZERO
 				_enter_sleeping()
 
-func _move_toward(target: Vector2, delta: float, speed_mult: float = 1.0) -> void:
+func _move_toward(target: Vector2, _delta: float, speed_mult: float = 1.0) -> void:
 	var dir := (target - global_position).normalized()
 	velocity = dir * _current_speed * speed_mult
 	var prev := global_position

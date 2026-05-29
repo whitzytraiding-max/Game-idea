@@ -3,7 +3,6 @@ extends Node
 signal run_started(objective: String)
 signal run_completed(stars: int, peak_noise: float)
 signal run_failed(completion_pct: float)
-signal revive_available
 
 const SCENE_MAIN_MENU := "res://scenes/main_menu.tscn"
 const SCENE_GAME      := "res://scenes/game.tscn"

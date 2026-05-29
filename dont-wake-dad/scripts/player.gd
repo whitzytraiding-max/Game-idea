@@ -8,8 +8,7 @@ const CREEP_SPEED   := 40.0
 const STEP_DISTANCE := 20.0
 const CATCH_DISTANCE := 28.0
 
-@onready var _visual: Polygon2D              = $Visual
-@onready var _flashlight: PointLight2D       = $Flashlight
+@onready var _visual: Polygon2D               = $Visual
 @onready var _step_audio: AudioStreamPlayer2D = $StepAudio
 @onready var _caught_audio: AudioStreamPlayer2D = $CaughtAudio
 @onready var _interaction_area: Area2D        = $InteractionArea
