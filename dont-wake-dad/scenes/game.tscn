@@ -137,24 +137,24 @@ mouse_filter = 2
 [node name="DadFaceLabel" type="Label" parent="JumpScare"]
 layout_mode = 0
 offset_left = 0
-offset_top = 280
+offset_top = 180
 offset_right = 390
-offset_bottom = 450
+offset_bottom = 520
 text = "😡"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 130
+theme_override_font_sizes/font_size = 220
 
 [node name="JumpText" type="Label" parent="JumpScare"]
 layout_mode = 0
 offset_left = 0
-offset_top = 460
+offset_top = 530
 offset_right = 390
-offset_bottom = 510
-text = "DAD IS COMING"
+offset_bottom = 590
+text = "DAD WOKE UP"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 28
-modulate = Color(1.0, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 34
+modulate = Color(1.0, 0.05, 0.05, 1)
 
 ; Virtual joystick — layer 15 (above world, below HUD)
 [node name="JoystickLayer" type="CanvasLayer" parent="."]

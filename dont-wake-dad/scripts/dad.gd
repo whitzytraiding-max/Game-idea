@@ -43,9 +43,8 @@ func _load_audio() -> void:
 	var snore: Resource = load("res://audio/dad/dad_snore.wav")
 	if snore and _snore_audio:
 		_snore_audio.stream = snore
-		# Loop snoring by reconnecting on finish
 		_snore_audio.finished.connect(_on_snore_finished)
-	var yell: Resource = load("res://audio/dad/dad_yell.wav")
+	var yell: Resource = load("res://audio/dad/dad_got_you.wav")
 	if yell and _yell_audio:
 		_yell_audio.stream = yell
 	var step: Resource = load("res://audio/dad/dad_footstep.wav")
@@ -55,6 +54,17 @@ func _load_audio() -> void:
 func _on_snore_finished() -> void:
 	if (state == State.SLEEPING or state == State.STIRRING) and _snore_audio:
 		_snore_audio.play()
+
+func _play_voice(filename: String, vol: float = 0.0) -> void:
+	var s: Resource = load("res://audio/dad/" + filename)
+	if not s:
+		return
+	var p := AudioStreamPlayer.new()
+	p.stream = s
+	p.volume_db = vol
+	add_child(p)
+	p.play()
+	p.finished.connect(p.queue_free)
 
 func _physics_process(delta: float) -> void:
 	match state:
@@ -118,6 +128,7 @@ func _on_should_stir() -> void:
 	if state == State.SLEEPING:
 		_stir_timer = DifficultyManager.config["stir_window"]
 		set_state(State.STIRRING)
+		_play_voice("dad_stir.wav", -4.0)
 
 func _on_noise_calmed() -> void:
 	if state == State.STIRRING:
@@ -145,6 +156,10 @@ func _enter_chase() -> void:
 	if _yell_audio and _yell_audio.stream:
 		_yell_audio.play()
 	dad_woke_up.emit()
+	# Delayed angry shout after jump scare settles
+	await get_tree().create_timer(1.8).timeout
+	if state == State.CHASING:
+		_play_voice("dad_angry.wav", 0.0)
 	var tween := create_tween()
 	tween.tween_property(_visual, "scale", Vector2(1.15, 1.15), 0.2)
 	tween.tween_property(_visual, "scale", Vector2(1.0, 1.0), 0.3)
@@ -152,11 +167,13 @@ func _enter_chase() -> void:
 func _enter_searching() -> void:
 	set_state(State.SEARCHING)
 	_search_timer = DifficultyManager.config["search_duration"]
+	_play_voice("dad_searching.wav", -2.0)
 
 func _enter_returning() -> void:
 	set_state(State.RETURNING)
 	if _eye_glow:
 		_eye_glow.enabled = false
+	_play_voice("dad_returning.wav", -4.0)
 
 func _enter_sleeping() -> void:
 	set_state(State.SLEEPING)
