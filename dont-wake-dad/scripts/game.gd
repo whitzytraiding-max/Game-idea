@@ -35,6 +35,8 @@ func _ready() -> void:
 	_dad.player = _player
 	if _caught_overlay:
 		_caught_overlay.visible = false
+		# Must process while paused so buttons work when game is paused
+		_caught_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 		_caught_overlay.get_node("GiveUpButton").pressed.connect(_on_give_up)
 		_caught_overlay.get_node("ExtraLifeButton").pressed.connect(_on_extra_life)
 	# Load and start ambient audio
@@ -93,6 +95,9 @@ func _collect_hide_spots() -> void:
 
 func _collect_objectives() -> void:
 	for node in _get_nodes_in_group_from(_current_level, "objective"):
+		# Sync this objective's label with the randomly assigned mission
+		if node.has_method("set_mission"):
+			node.set_mission(GameManager.current_objective)
 		if node.has_method("pulse"):
 			node.pulse()
 

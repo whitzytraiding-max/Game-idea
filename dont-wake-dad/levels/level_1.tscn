@@ -589,8 +589,29 @@ color = Color(0.9, 0.6, 0.1, 0.4)
 
 ; ═══ SPAWN MARKERS ═════════════════════════════════════════════════════════
 
+; ── Dad's bed (in his room, left side of hallway 2) ──────────────────────────
+[node name="DadBedFrame" type="Polygon2D" parent="."]
+position = Vector2(55, 1040)
+polygon = PackedVector2Array(-45, -30, 45, -30, 45, 30, -45, 30)
+color = Color(0.2, 0.12, 0.25, 1)
+
+[node name="DadBedHeadboard" type="Polygon2D" parent="."]
+position = Vector2(55, 1010)
+polygon = PackedVector2Array(-45, 0, 45, 0, 45, 14, -45, 14)
+color = Color(0.28, 0.16, 0.32, 1)
+
+[node name="DadBedSheets" type="Polygon2D" parent="."]
+position = Vector2(55, 1040)
+polygon = PackedVector2Array(-38, -22, 38, -22, 38, 24, -38, 24)
+color = Color(0.5, 0.32, 0.2, 1)
+
+[node name="DadBedPillow" type="Polygon2D" parent="."]
+position = Vector2(55, 1020)
+polygon = PackedVector2Array(-18, 0, 18, 0, 18, 14, -18, 14)
+color = Color(0.75, 0.68, 0.6, 1)
+
 [node name="PlayerStart" type="Marker2D" parent="."]
 position = Vector2(195, 1260)
 
 [node name="DadStart" type="Marker2D" parent="."]
-position = Vector2(195, 80)
+position = Vector2(55, 1040)

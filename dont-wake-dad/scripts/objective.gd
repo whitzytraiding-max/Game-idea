@@ -22,6 +22,9 @@ func _ready() -> void:
 	if s and _audio:
 		_audio.stream = s
 
+func set_mission(mission_text: String) -> void:
+	objective_description = mission_text
+
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("player") or _completed:
 		return

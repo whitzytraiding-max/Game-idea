@@ -44,7 +44,9 @@ func _load_audio() -> void:
 	if snore and _snore_audio:
 		_snore_audio.stream = snore
 		_snore_audio.finished.connect(_on_snore_finished)
-	var yell: Resource = load("res://audio/dad/dad_got_you.wav")
+	var yell: Resource = load("res://audio/dad/dad_got_you.mp3")
+	if not yell:
+		yell = load("res://audio/dad/dad_got_you.wav")
 	if yell and _yell_audio:
 		_yell_audio.stream = yell
 	var step: Resource = load("res://audio/dad/dad_footstep.wav")
@@ -56,7 +58,11 @@ func _on_snore_finished() -> void:
 		_snore_audio.play()
 
 func _play_voice(filename: String, vol: float = 0.0) -> void:
-	var s: Resource = load("res://audio/dad/" + filename)
+	# Try MP3 first (Google TTS), fall back to WAV (macOS TTS)
+	var mp3_name := filename.replace(".wav", ".mp3")
+	var s: Resource = load("res://audio/dad/" + mp3_name)
+	if not s:
+		s = load("res://audio/dad/" + filename)
 	if not s:
 		return
 	var p := AudioStreamPlayer.new()
