@@ -121,6 +121,43 @@ anchor_bottom = 1.0
 color = Color(0.8, 0.0, 0.0, 0.0)
 mouse_filter = 2
 
+; Phase announcement overlay — shown for 2.5s on phase transitions
+[node name="PhaseAnnounce" type="CanvasLayer" parent="."]
+layer = 45
+visible = false
+
+[node name="PhaseBG" type="ColorRect" parent="PhaseAnnounce"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.82)
+mouse_filter = 2
+
+[node name="PhaseLabel" type="Label" parent="PhaseAnnounce"]
+layout_mode = 0
+offset_left = 10
+offset_top = 280
+offset_right = 380
+offset_bottom = 420
+text = "🎯  GET THE ITEM"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 32
+modulate = Color(1.0, 0.9, 0.2, 1)
+
+[node name="PhaseSubLabel" type="Label" parent="PhaseAnnounce"]
+layout_mode = 0
+offset_left = 10
+offset_top = 430
+offset_right = 380
+offset_bottom = 490
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+modulate = Color(0.8, 0.8, 0.8, 1)
+
 ; Jump scare overlay — shown briefly when dad wakes up
 [node name="JumpScare" type="CanvasLayer" parent="."]
 layer = 50

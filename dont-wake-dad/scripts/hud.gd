@@ -8,12 +8,18 @@ extends CanvasLayer
 func _ready() -> void:
 	NoiseMeter.noise_changed.connect(_on_noise_changed)
 	GameManager.run_started.connect(_on_run_started)
+	GameManager.phase_one_complete.connect(_on_phase_one_complete)
 	_update_bar(0.0)
 	_update_dad_status(0.0)
 
 func _on_run_started(objective: String) -> void:
 	if _objective_label:
-		_objective_label.text = "Mission: " + objective
+		_objective_label.text = "🎯 " + objective
+
+func _on_phase_one_complete(_obj: String) -> void:
+	if _objective_label:
+		_objective_label.text = "🛏️  GET BACK TO BED!"
+		_objective_label.modulate = Color(1.0, 0.9, 0.2, 1.0)
 
 func _on_noise_changed(value: float) -> void:
 	_update_bar(value)

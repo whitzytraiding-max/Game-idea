@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://level1001"]
+[gd_scene load_steps=15 format=3 uid="uid://level1001"]
 
 [ext_resource type="Script" path="res://scripts/noise_object.gd" id="3_noise"]
 [ext_resource type="Script" path="res://scripts/hide_spot.gd" id="4_hide"]
 [ext_resource type="Script" path="res://scripts/objective.gd" id="5_obj"]
+[ext_resource type="Script" path="res://scripts/bed_return.gd" id="6_bed"]
 
 ; --- Collision shapes ---
 [sub_resource type="RectangleShape2D" id="RS_wallL"]
@@ -610,8 +611,30 @@ position = Vector2(55, 1020)
 polygon = PackedVector2Array(-18, 0, 18, 0, 18, 14, -18, 14)
 color = Color(0.75, 0.68, 0.6, 1)
 
+; ── Kid's bed return target (Phase 2 win condition) ─────────────────────────
+[node name="BedReturn" type="Area2D" parent="."]
+position = Vector2(320, 1280)
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("6_bed")
+
+[node name="Visual" type="Polygon2D" parent="BedReturn"]
+polygon = PackedVector2Array(-48, -28, 48, -28, 48, 28, -48, 28)
+color = Color(0.3, 0.38, 0.6, 0.9)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BedReturn"]
+shape = SubResource("RS_floor_carpet")
+scale = Vector2(0.25, 0.13)
+
+[node name="PromptLabel" type="Label" parent="BedReturn"]
+position = Vector2(-48, -52)
+text = "TAP TO SLEEP 🛏️"
+visible = false
+theme_override_font_sizes/font_size = 13
+modulate = Color(1.0, 0.9, 0.2, 1)
+
 [node name="PlayerStart" type="Marker2D" parent="."]
-position = Vector2(195, 1260)
+position = Vector2(195, 1340)
 
 [node name="DadStart" type="Marker2D" parent="."]
 position = Vector2(55, 1040)

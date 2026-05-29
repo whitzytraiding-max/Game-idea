@@ -4,10 +4,13 @@ extends Node2D
 @onready var _player: CharacterBody2D    = $Player
 @onready var _dad: CharacterBody2D       = $Dad
 @onready var _camera: Camera2D           = $Camera2D
-@onready var _caught_overlay: CanvasLayer = $CaughtOverlay
-@onready var _light_flicker: ColorRect   = $LightFlicker
-@onready var _noise_vignette: ColorRect  = $NoiseVignette/VignetteRect
-@onready var _jump_scare: CanvasLayer    = $JumpScare
+@onready var _caught_overlay: CanvasLayer  = $CaughtOverlay
+@onready var _light_flicker: ColorRect    = $LightFlicker
+@onready var _noise_vignette: ColorRect   = $NoiseVignette/VignetteRect
+@onready var _phase_announce: CanvasLayer = $PhaseAnnounce
+@onready var _phase_label: Label          = $PhaseAnnounce/PhaseLabel
+@onready var _phase_sub: Label            = $PhaseAnnounce/PhaseSubLabel
+@onready var _jump_scare: CanvasLayer     = $JumpScare
 @onready var _jump_scare_bg: ColorRect   = $JumpScare/BG
 @onready var _jump_scare_face: Label     = $JumpScare/DadFaceLabel
 @onready var _jump_scare_text: Label     = $JumpScare/JumpText
@@ -28,11 +31,18 @@ func _ready() -> void:
 	add_to_group("game")
 	_load_level()
 	GameManager.start_run()
+	# Show mission briefing for 3 seconds at run start
+	_show_phase_announcement(
+		"🎯  MISSION",
+		GameManager.current_objective + "\n\nThen get back to bed!",
+		3.0
+	)
 	_player.player_caught.connect(_on_player_caught)
 	_dad.dad_woke_up.connect(_on_dad_woke_up)
 	_dad.dad_returned_to_bed.connect(_on_dad_returned)
 	EventManager.event_fired.connect(_on_event_fired)
 	_dad.player = _player
+	GameManager.phase_one_complete.connect(_on_phase_one_complete)
 	if _caught_overlay:
 		_caught_overlay.visible = false
 		# Must process while paused so buttons work when game is paused
@@ -43,6 +53,25 @@ func _ready() -> void:
 	_load_audio()
 	if _ambience_player and _ambience_player.stream:
 		_ambience_player.play()
+
+func _show_phase_announcement(title: String, subtitle: String, duration: float) -> void:
+	if not _phase_announce:
+		return
+	if _phase_label: _phase_label.text = title
+	if _phase_sub:   _phase_sub.text = subtitle
+	_phase_announce.visible = true
+	await get_tree().create_timer(duration).timeout
+	if _phase_announce: _phase_announce.visible = false
+
+func _on_phase_one_complete(objective: String) -> void:
+	# Play a quiet success chime
+	_play_oneshot("res://audio/sfx/success.wav", -6.0)
+	# Show "Now get back to bed" announcement
+	_show_phase_announcement(
+		"🛏️  NOW GET BACK TO BED!",
+		"You got: " + objective + "\nSneak back before Dad notices!",
+		3.0
+	)
 
 func _load_audio() -> void:
 	var amb: Resource = load("res://audio/ambient/tense_ambient.wav")
@@ -69,6 +98,10 @@ func _load_level() -> void:
 	if level_scene:
 		_current_level = level_scene.instantiate()
 		_level_container.add_child(_current_level)
+		# Randomize obstacle layout before positioning entities
+		var randomizer := preload("res://scripts/level_randomizer.gd").new()
+		randomizer.randomize_level(_current_level)
+		randomizer.free()
 		_position_entities()
 		_collect_hide_spots()
 		_collect_objectives()

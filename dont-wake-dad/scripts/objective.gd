@@ -60,7 +60,8 @@ func _complete() -> void:
 	if _label:
 		_label.visible = false
 	objective_completed.emit()
-	GameManager.complete_run()
+	# Phase 1 complete — player now needs to return to bed
+	GameManager.complete_phase_one()
 
 func pulse() -> void:
 	if not _visual:

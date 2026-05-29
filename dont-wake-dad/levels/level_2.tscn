@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://level2001"]
+[gd_scene load_steps=9 format=3 uid="uid://level2001"]
 
 [ext_resource type="Script" path="res://scripts/noise_object.gd" id="3_noise"]
 [ext_resource type="Script" path="res://scripts/hide_spot.gd" id="4_hide"]
 [ext_resource type="Script" path="res://scripts/objective.gd" id="5_obj"]
+[ext_resource type="Script" path="res://scripts/bed_return.gd" id="6_bed"]
 
 [sub_resource type="RectangleShape2D" id="RS_wallL"]
 size = Vector2(60, 1500)
@@ -338,6 +339,28 @@ text = "TAP TO HIDE"
 visible = false
 theme_override_font_sizes/font_size = 12
 modulate = Color(0.2, 1.0, 0.3, 1)
+
+; ── Bed return target — bottom right of sibling zone ────────────────────────
+[node name="BedReturn" type="Area2D" parent="."]
+position = Vector2(195, 1400)
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("6_bed")
+
+[node name="Visual" type="Polygon2D" parent="BedReturn"]
+polygon = PackedVector2Array(-40, -25, 40, -25, 40, 25, -40, 25)
+color = Color(0.3, 0.38, 0.6, 0.9)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BedReturn"]
+shape = SubResource("RS_small")
+scale = Vector2(4.0, 2.5)
+
+[node name="PromptLabel" type="Label" parent="BedReturn"]
+position = Vector2(-42, -48)
+text = "TAP TO SLEEP 🛏️"
+visible = false
+theme_override_font_sizes/font_size = 13
+modulate = Color(1.0, 0.9, 0.2, 1)
 
 ; ---- SPAWN MARKERS ----
 [node name="PlayerStart" type="Marker2D" parent="."]

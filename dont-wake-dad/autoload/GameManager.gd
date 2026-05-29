@@ -1,6 +1,7 @@
 extends Node
 
 signal run_started(objective: String)
+signal phase_one_complete(objective: String)   # item collected — now return to bed
 signal run_completed(stars: int, peak_noise: float)
 signal run_failed(completion_pct: float)
 
@@ -9,17 +10,21 @@ const SCENE_GAME      := "res://scenes/game.tscn"
 const SCENE_WIN       := "res://scenes/win_screen.tscn"
 const SCENE_LOSE      := "res://scenes/lose_screen.tscn"
 
-const OBJECTIVES: Array = [
+# Kitchen objectives — match level 1's fridge objective
+const OBJECTIVES_L1: Array = [
 	"Get a snack from the kitchen",
-	"Charge your phone",
-	"Steal the TV remote",
 	"Get a glass of water",
-	"Rescue your Nintendo Switch",
-	"Use the bathroom",
-	"Get your shoes for school",
 	"Check the fridge at midnight",
-	"Silence your alarm clock",
-	"Return the dog to his bed",
+	"Grab some leftovers",
+	"Get some ice cream",
+]
+
+# Living room objectives — match level 2's TV remote
+const OBJECTIVES_L2: Array = [
+	"Steal the TV remote",
+	"Rescue your Nintendo Switch",
+	"Get your phone charger",
+	"Grab your headphones",
 ]
 
 const LEVEL_SCENES: Array = [
@@ -34,14 +39,18 @@ var current_level_index: int = 0
 var revives_used_this_run: int = 0
 var last_completion_pct: float = 0.0
 var last_stars: int = 0
+var phase: int = 0   # 0 = collect item, 1 = return to bed
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func start_run() -> void:
+	phase = 0
 	current_run += 1
 	revives_used_this_run = 0
-	current_objective = OBJECTIVES[randi() % OBJECTIVES.size()]
+	# Pick objective pool matching current level
+	var pool: Array = OBJECTIVES_L1 if current_level_index == 0 else OBJECTIVES_L2
+	current_objective = pool[randi() % pool.size()]
 	DifficultyManager.update_for_run(current_run)
 	NoiseMeter.decay_rate = DifficultyManager.config.noise_decay_rate
 	NoiseMeter.activate()
@@ -49,7 +58,14 @@ func start_run() -> void:
 	EventManager.start_events()
 	run_started.emit(current_objective)
 
+func complete_phase_one() -> void:
+	phase = 1
+	# Small noise reward for getting the item
+	NoiseMeter.reset(minf(NoiseMeter.current_noise * 0.6, 25.0))
+	phase_one_complete.emit(current_objective)
+
 func complete_run() -> void:
+	phase = 0
 	NoiseMeter.deactivate()
 	EventManager.stop_events()
 	var peak := NoiseMeter.get_peak()
@@ -62,6 +78,7 @@ func complete_run() -> void:
 	get_tree().change_scene_to_file(SCENE_WIN)
 
 func fail_run(completion_pct: float) -> void:
+	phase = 0
 	NoiseMeter.deactivate()
 	EventManager.stop_events()
 	last_completion_pct = completion_pct
@@ -79,6 +96,7 @@ func use_revive() -> bool:
 	return true
 
 func go_to_main_menu() -> void:
+	phase = 0
 	NoiseMeter.deactivate()
 	EventManager.stop_events()
 	get_tree().change_scene_to_file(SCENE_MAIN_MENU)
