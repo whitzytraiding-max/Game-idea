@@ -29,8 +29,8 @@ var _vignette_alpha: float = 0.0
 
 func _ready() -> void:
 	add_to_group("game")
+	GameManager.start_run()   # must run first — sets current_required_room for the generator
 	_load_level()
-	GameManager.start_run()
 	# Show mission briefing for 3 seconds at run start
 	_show_phase_announcement(
 		"🎯  MISSION",
@@ -95,7 +95,7 @@ func _load_audio() -> void:
 
 func _load_level() -> void:
 	# Number of middle rooms scales with runs played (2 min, 5 max)
-	var num_middle: int = clampi(2 + GameManager.current_run / 4, 2, 5)
+	var num_middle: int = clampi(2 + GameManager.current_run / 4, 2, 5)  # integer division intentional
 	var gen := preload("res://scripts/house_generator.gd").new()
 	_current_level = gen.generate(GameManager.current_required_room, num_middle)
 	_level_container.add_child(_current_level)
@@ -253,50 +253,57 @@ func _on_dad_woke_up() -> void:
 			spot.glow_for_dad()
 
 func _play_jump_scare() -> void:
-	# 1. Kill all audio — DEAD SILENCE is the scariest thing
+	# 1. Kill all audio — dead silence before the hit
 	if _ambience_player: _ambience_player.volume_db = -80
 	if _heartbeat_player: _heartbeat_player.stop()
 
-	# 2. Silence pause — 0.3s. Player relaxes. THEN it hits.
-	await get_tree().create_timer(0.3).timeout
+	# 2. Tension pause — 0.4s of pure silence
+	await get_tree().create_timer(0.4).timeout
 
-	# 3. HORROR STING + DOOR SLAM at same moment — massive audio impact
-	_play_oneshot("res://audio/sfx/door_slam.wav", 8.0)
-	_play_oneshot("res://audio/sfx/horror_sting.wav", 6.0)
+	# 3. Door slam + horror sting hit together
+	_play_oneshot("res://audio/sfx/door_slam.wav", 10.0)
+	_play_oneshot("res://audio/sfx/horror_sting.wav", 7.0)
+	add_screen_shake(1.0)
 
-	# 4. WHITE FLASH — 0.05s of white fills screen before face appears
-	if _jump_scare_bg:
-		_jump_scare_bg.color = Color(1, 1, 1, 1)
-	if _jump_scare:
-		_jump_scare.visible = true
+	# 4. Instant WHITE FLASH
+	if _jump_scare_bg: _jump_scare_bg.color = Color(1, 1, 1, 1)
+	if _jump_scare: _jump_scare.visible = true
 	if _jump_scare_face: _jump_scare_face.modulate = Color(1, 1, 1, 0)
 	if _jump_scare_text: _jump_scare_text.modulate = Color(1, 1, 1, 0)
 
-	await get_tree().create_timer(0.05).timeout
+	await get_tree().create_timer(0.06).timeout
 
-	# 5. Slam to dark red + face pops in instantly — no easing
-	if _jump_scare_bg:
-		_jump_scare_bg.color = Color(0.15, 0.0, 0.0, 1)
-	if _jump_scare_face: _jump_scare_face.modulate = Color(1, 0.3, 0.3, 1)
-	if _jump_scare_text: _jump_scare_text.modulate = Color(1, 0.1, 0.1, 1)
+	# 5. Slam to deep red — big angry text, no emoji
+	if _jump_scare_bg: _jump_scare_bg.color = Color(0.08, 0.0, 0.0, 1)
+	if _jump_scare_face:
+		_jump_scare_face.text = "DAD\nIS\nAWAKE"
+		_jump_scare_face.add_theme_font_size_override("font_size", 72)
+		_jump_scare_face.modulate = Color(1.0, 0.05, 0.05, 1)
+	if _jump_scare_text:
+		_jump_scare_text.text = "RUN  OR  HIDE"
+		_jump_scare_text.add_theme_font_size_override("font_size", 22)
+		_jump_scare_text.modulate = Color(1.0, 0.3, 0.3, 1)
 	add_screen_shake(1.0)
 
-	# 6. Dad yells while face is up
-	await get_tree().create_timer(0.15).timeout
-	_play_oneshot("res://audio/dad/dad_got_you.wav", 2.0)
+	# 6. Deep scary dad yell on DadVoice bus
+	await get_tree().create_timer(0.1).timeout
+	_play_dad_voice_oneshot("res://audio/dad/dad_got_you.wav", 4.0)
 
-	# 7. Hold — player has time to panic
-	await get_tree().create_timer(1.2).timeout
+	# 7. Rapid shake pulses while text is up
+	for _i in range(3):
+		await get_tree().create_timer(0.18).timeout
+		add_screen_shake(0.5)
 
-	# 8. Fade out all children
+	await get_tree().create_timer(0.6).timeout
+
+	# 8. Fade out fast
 	if _jump_scare:
 		var tween := create_tween().set_parallel(true)
-		if _jump_scare_bg:   tween.tween_property(_jump_scare_bg,   "modulate:a", 0.0, 0.4)
-		if _jump_scare_face: tween.tween_property(_jump_scare_face, "modulate:a", 0.0, 0.4)
-		if _jump_scare_text: tween.tween_property(_jump_scare_text, "modulate:a", 0.0, 0.4)
+		if _jump_scare_bg:   tween.tween_property(_jump_scare_bg,   "modulate:a", 0.0, 0.25)
+		if _jump_scare_face: tween.tween_property(_jump_scare_face, "modulate:a", 0.0, 0.25)
+		if _jump_scare_text: tween.tween_property(_jump_scare_text, "modulate:a", 0.0, 0.25)
 		tween.chain().tween_callback(func():
 			if _jump_scare: _jump_scare.visible = false
-			# Reset for next time
 			if _jump_scare_bg:
 				_jump_scare_bg.color    = Color(0, 0, 0, 1)
 				_jump_scare_bg.modulate = Color(1, 1, 1, 1)
@@ -304,9 +311,9 @@ func _play_jump_scare() -> void:
 			if _jump_scare_text: _jump_scare_text.modulate = Color(1, 1, 1, 1)
 		)
 
-	# 9. Chase music slams in hard
+	# 9. Chase music in hard right after fade
 	if _music_player and _music_player.stream:
-		_music_player.volume_db = -14
+		_music_player.volume_db = -10
 		_music_player.play()
 
 func _on_dad_returned() -> void:
@@ -358,6 +365,19 @@ func _play_oneshot(path: String, vol: float) -> void:
 	var p := AudioStreamPlayer.new()
 	p.stream = s
 	p.volume_db = vol
+	add_child(p)
+	p.play()
+	p.finished.connect(p.queue_free)
+
+func _play_dad_voice_oneshot(path: String, vol: float) -> void:
+	var s: Resource = load(path)
+	if not s:
+		return
+	var p := AudioStreamPlayer.new()
+	p.stream = s
+	p.volume_db = vol
+	p.pitch_scale = 0.60
+	p.bus = "DadVoice"
 	add_child(p)
 	p.play()
 	p.finished.connect(p.queue_free)

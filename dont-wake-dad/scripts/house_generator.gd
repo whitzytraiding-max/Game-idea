@@ -72,10 +72,10 @@ func _build_room(root: Node2D, rtype: String, y_off: float, north_door: bool, so
 	root.add_child(c)
 
 	# Floor
-	var floor := ColorRect.new()
-	floor.size = Vector2(ROOM_W, ROOM_H)
-	floor.color = _floor_color(rtype)
-	c.add_child(floor)
+	var room_floor := ColorRect.new()
+	room_floor.size = Vector2(ROOM_W, ROOM_H)
+	room_floor.color = _floor_color(rtype)
+	c.add_child(room_floor)
 
 	# Room name label
 	var lbl := Label.new()
