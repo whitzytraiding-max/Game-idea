@@ -118,6 +118,8 @@ func _south_wall(c: Node2D, has_door: bool) -> void:
 
 func _wall_rect(parent: Node2D, x: float, y: float, w: float, h: float) -> void:
 	var body := StaticBody2D.new()
+	body.collision_layer = 2
+	body.collision_mask = 0
 	body.position = Vector2(x, y)
 
 	var cs := CollisionShape2D.new()
