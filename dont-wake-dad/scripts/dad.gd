@@ -35,21 +35,43 @@ func _ready() -> void:
 	_catch_area.body_entered.connect(_on_catch_area_body_entered)
 	if _eye_glow:
 		_eye_glow.enabled = false
+	_setup_voice_bus()
 	_load_audio()
 	if _snore_audio and _snore_audio.stream:
 		_snore_audio.play()
+
+func _setup_voice_bus() -> void:
+	if AudioServer.get_bus_index("DadVoice") != -1:
+		return
+	AudioServer.add_bus()
+	var idx: int = AudioServer.get_bus_count() - 1
+	AudioServer.set_bus_name(idx, "DadVoice")
+	AudioServer.set_bus_send(idx, "Master")
+	# Deep reverb — small room echo makes it feel close and threatening
+	var reverb := AudioEffectReverb.new()
+	reverb.room_size = 0.55
+	reverb.damping = 0.55
+	reverb.wet = 0.30
+	reverb.dry = 0.85
+	AudioServer.add_bus_effect(idx, reverb)
 
 func _load_audio() -> void:
 	var snore: Resource = load("res://audio/dad/dad_snore.wav")
 	if snore and _snore_audio:
 		_snore_audio.stream = snore
+		_snore_audio.pitch_scale = 0.62
+		_snore_audio.bus = "DadVoice"
 		_snore_audio.finished.connect(_on_snore_finished)
 	var yell: Resource = load("res://audio/dad/dad_got_you.wav")
 	if yell and _yell_audio:
 		_yell_audio.stream = yell
+		_yell_audio.pitch_scale = 0.60
+		_yell_audio.bus = "DadVoice"
 	var step: Resource = load("res://audio/dad/dad_footstep.wav")
 	if step and _footstep_audio:
 		_footstep_audio.stream = step
+		_footstep_audio.pitch_scale = 0.80
+		_footstep_audio.bus = "DadVoice"
 
 func _on_snore_finished() -> void:
 	if (state == State.SLEEPING or state == State.STIRRING) and _snore_audio:
@@ -62,6 +84,8 @@ func _play_voice(filename: String, vol: float = 0.0) -> void:
 	var p := AudioStreamPlayer.new()
 	p.stream = s
 	p.volume_db = vol
+	p.pitch_scale = 0.60
+	p.bus = "DadVoice"
 	add_child(p)
 	p.play()
 	p.finished.connect(p.queue_free)

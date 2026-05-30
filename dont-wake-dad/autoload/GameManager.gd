@@ -10,32 +10,25 @@ const SCENE_GAME      := "res://scenes/game.tscn"
 const SCENE_WIN       := "res://scenes/win_screen.tscn"
 const SCENE_LOSE      := "res://scenes/lose_screen.tscn"
 
-# Kitchen objectives — match level 1's fridge objective
-const OBJECTIVES_L1: Array = [
-	"Get a snack from the kitchen",
-	"Get a glass of water",
-	"Check the fridge at midnight",
-	"Grab some leftovers",
-	"Get some ice cream",
-]
-
-# Living room objectives — match level 2's TV remote
-const OBJECTIVES_L2: Array = [
-	"Steal the TV remote",
-	"Rescue your Nintendo Switch",
-	"Get your phone charger",
-	"Grab your headphones",
-]
-
-const LEVEL_SCENES: Array = [
-	"res://levels/level_1.tscn",
-	"res://levels/level_2.tscn",
+# Each objective maps to the room type where the item lives
+const OBJECTIVES: Array = [
+	{"text": "Get a glass of water",        "room": "kitchen"},
+	{"text": "Get a snack from the fridge", "room": "kitchen"},
+	{"text": "Grab some ice cream",         "room": "kitchen"},
+	{"text": "Grab some leftovers",         "room": "kitchen"},
+	{"text": "Check the fridge at midnight","room": "kitchen"},
+	{"text": "Steal the TV remote",         "room": "living_room"},
+	{"text": "Rescue your Nintendo Switch", "room": "living_room"},
+	{"text": "Get your phone charger",      "room": "living_room"},
+	{"text": "Grab your headphones",        "room": "living_room"},
+	{"text": "Go to the bathroom",          "room": "bathroom"},
+	{"text": "Grab some toilet paper",      "room": "bathroom"},
 ]
 
 var current_run: int = 0
 var total_stars: int = 0
 var current_objective: String = ""
-var current_level_index: int = 0
+var current_required_room: String = ""
 var revives_used_this_run: int = 0
 var last_completion_pct: float = 0.0
 var last_stars: int = 0
@@ -48,9 +41,9 @@ func start_run() -> void:
 	phase = 0
 	current_run += 1
 	revives_used_this_run = 0
-	# Pick objective pool matching current level
-	var pool: Array = OBJECTIVES_L1 if current_level_index == 0 else OBJECTIVES_L2
-	current_objective = pool[randi() % pool.size()]
+	var chosen: Dictionary = OBJECTIVES[randi() % OBJECTIVES.size()]
+	current_objective = chosen["text"]
+	current_required_room = chosen["room"]
 	DifficultyManager.update_for_run(current_run)
 	NoiseMeter.decay_rate = DifficultyManager.config.noise_decay_rate
 	NoiseMeter.activate()
@@ -103,12 +96,6 @@ func go_to_main_menu() -> void:
 
 func go_to_game() -> void:
 	get_tree().change_scene_to_file(SCENE_GAME)
-
-func get_current_level_scene() -> String:
-	return LEVEL_SCENES[current_level_index % LEVEL_SCENES.size()]
-
-func advance_level() -> void:
-	current_level_index = (current_level_index + 1) % LEVEL_SCENES.size()
 
 func _calculate_stars(peak_noise: float) -> int:
 	if peak_noise < 30.0:

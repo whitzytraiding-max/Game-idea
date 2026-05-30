@@ -94,20 +94,16 @@ func _load_audio() -> void:
 		)
 
 func _load_level() -> void:
-	var level_scene: Resource = load(GameManager.get_current_level_scene())
-	if level_scene:
-		_current_level = level_scene.instantiate()
-		_level_container.add_child(_current_level)
-		# Randomize obstacle layout before positioning entities
-		var randomizer := preload("res://scripts/level_randomizer.gd").new()
-		randomizer.randomize_level(_current_level)
-		randomizer.free()
-		_position_entities()
-		_collect_hide_spots()
-		_collect_objectives()
-		# Snap camera directly to player on first frame — no lerp lag at start
-		_camera.global_position = _player.global_position
-		_clamp_camera()
+	# Number of middle rooms scales with runs played (2 min, 5 max)
+	var num_middle: int = clampi(2 + GameManager.current_run / 4, 2, 5)
+	var gen := preload("res://scripts/house_generator.gd").new()
+	_current_level = gen.generate(GameManager.current_required_room, num_middle)
+	_level_container.add_child(_current_level)
+	_position_entities()
+	_collect_hide_spots()
+	_collect_objectives()
+	_camera.global_position = _player.global_position
+	_clamp_camera()
 
 func _position_entities() -> void:
 	var player_start: Node = _current_level.get_node_or_null("PlayerStart")
