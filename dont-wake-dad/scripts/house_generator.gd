@@ -27,8 +27,12 @@ func generate(required_room: String, num_middle: int) -> Node2D:
 		middle.append(pool[i])
 	middle.shuffle()
 
-	var rooms: Array = ["dads_room"] + middle + ["kids_room"]
-	var total_h: float = rooms.size() * ROOM_H
+	# Objective rooms at TOP, Dad's Room just above Kid's Room at BOTTOM.
+	# This puts Dad close to the player (matching original level feel) and
+	# forces the player to sneak PAST Dad to reach the objective.
+	var rooms: Array = middle + ["dads_room", "kids_room"]
+	var n: int = rooms.size()
+	var total_h: float = float(n) * ROOM_H
 
 	var root := Node2D.new()
 	root.name = "GeneratedHouse"
@@ -39,22 +43,25 @@ func generate(required_room: String, num_middle: int) -> Node2D:
 	bg.color = Color(0.06, 0.06, 0.10, 1.0)
 	root.add_child(bg)
 
-	for i in range(rooms.size()):
+	for i in range(n):
 		var rtype: String = rooms[i]
 		var y_off: float = float(i) * ROOM_H
 		var north_door: bool = (i > 0)
-		var south_door: bool = (i < rooms.size() - 1)
+		var south_door: bool = (i < n - 1)
 		var is_obj: bool = (rtype == required_room)
 		_build_room(root, rtype, y_off, north_door, south_door, is_obj)
 
+	# PlayerStart — near bed at bottom of Kid's Room
 	var ps := Node2D.new()
 	ps.name = "PlayerStart"
-	ps.position = Vector2(ROOM_W * 0.5, float(rooms.size() - 1) * ROOM_H + ROOM_H * 0.78)
+	ps.position = Vector2(ROOM_W * 0.5, float(n - 1) * ROOM_H + ROOM_H * 0.75)
 	root.add_child(ps)
 
+	# DadStart — near south door of Dad's Room so he's close to the player
+	var dad_y: float = float(n - 2) * ROOM_H
 	var ds := Node2D.new()
 	ds.name = "DadStart"
-	ds.position = Vector2(ROOM_W * 0.3, ROOM_H * 0.32)
+	ds.position = Vector2(ROOM_W * 0.35, dad_y + ROOM_H * 0.38)
 	root.add_child(ds)
 
 	return root
