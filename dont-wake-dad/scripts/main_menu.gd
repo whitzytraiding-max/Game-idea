@@ -26,7 +26,7 @@ func _start_ambient_audio() -> void:
 		_ambience.finished.connect(func(): if _ambience: _ambience.play())
 
 func _refresh_ui() -> void:
-	var obj_pool: Array = GameManager.OBJECTIVES
+	var obj_pool: Array = GameManager.OBJECTIVES_L1 + GameManager.OBJECTIVES_L2
 	var preview: String = obj_pool[randi() % obj_pool.size()]
 	if _mission_label:
 		_mission_label.text = "Tonight:\n\"" + preview + "\""

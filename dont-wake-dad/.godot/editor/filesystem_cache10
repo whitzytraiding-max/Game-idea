@@ -9,10 +9,10 @@ chase_music.wav::AudioStreamWAV::8286205423002707433::1779993379::1780009596::1:
 heartbeat.wav::AudioStreamWAV::1549067779296360586::1780057722::1780057874::1::::<><><>0<>0<>490b84bfd45c3df65e133e5b46b7e359<>res://.godot/imported/heartbeat.wav-9e31d314f33a85d16aa2fc2f9d64dddb.sample::
 house_hum.wav::AudioStreamWAV::6724840929111357648::1779993327::1780009596::1::::<><><>0<>0<>27a06aebfbb1480782fda8fbb789c7c2<>res://.godot/imported/house_hum.wav-f3305f59852758c82ed73ac662317333.sample::
 tense_ambient.wav::AudioStreamWAV::8821421747538772465::1779993379::1780009596::1::::<><><>0<>0<>a2d3ed8d633edf3db91c7a7a861adfd9<>res://.godot/imported/tense_ambient.wav-7cbfc6d9391b0dbc7be638a9b1d0bd71.sample::
-::res://audio/dad/::1780099890
+::res://audio/dad/::1780099971
 dad_angry.wav::AudioStreamWAV::6253004027706912312::1780099838::1780099971::1::::<><><>0<>0<>c0f7b6eb80622ba67b4f199b1fbdcda3<>res://.godot/imported/dad_angry.wav-3afe58ec9cabf925698c0c2a34b669a2.sample::
 dad_footstep.wav::AudioStreamWAV::1009757588451441447::1780057722::1780057874::1::::<><><>0<>0<>163b25a10d5739f0220cc9e918d336f8<>res://.godot/imported/dad_footstep.wav-aad8974783b9f799cfd57a4649bf3546.sample::
-dad_gotback.wav::AudioStreamWAV::5760552322489850611::1780099848::1780099971::1::::<><><>0<>0<>e2f7276417f4a84a16e8a2a65cb26676<>res://.godot/imported/dad_gotback.wav-fda0eff7885cb489244a45a9113fc653.sample::
+dad_gotback.wav::AudioStreamWAV::5760552322489850611::1780099848::1780104107::1::::<><><>0<>0<>e2f7276417f4a84a16e8a2a65cb26676<>res://.godot/imported/dad_gotback.wav-fda0eff7885cb489244a45a9113fc653.sample::
 dad_got_you.wav::AudioStreamWAV::7487053927319148663::1780099835::1780099971::1::::<><><>0<>0<>97c76b69df64f13932d49eae3c3e12c4<>res://.godot/imported/dad_got_you.wav-93908e5ece07f7c9f7e31b0c95811c98.sample::
 dad_returning.wav::AudioStreamWAV::7275202108035038402::1780099843::1780099971::1::::<><><>0<>0<>9d4f1ae2020e0a4e8fedde2741122c0c<>res://.godot/imported/dad_returning.wav-131ea4b9fac61c44e97bad728d2eaf4b.sample::
 dad_searching.wav::AudioStreamWAV::1691950358096668779::1780099841::1780099971::1::::<><><>0<>0<>ff5de4c14ae98a4cc626ea5f8f186ca1<>res://.godot/imported/dad_searching.wav-cbb4b1038a8cdf5b70234e1585f55025.sample::
@@ -77,10 +77,10 @@ noise_object.tscn::PackedScene::27702187290082792::1779989805::0::1::::<><><>0<>
 objective.tscn::PackedScene::985261919586748544::1779989805::0::1::::<><><>0<>0<><>::res://scripts/objective.gd
 player.tscn::PackedScene::27365761918488::1779991733::0::1::::<><><>0<>0<><>::res://scripts/player.gd
 ::res://levels/::1780065558
-level_1.tscn::PackedScene::19886464740240::1780065522::0::1::::<><><>0<>0<><>::res://scripts/noise_object.gd<>res://scripts/hide_spot.gd<>res://scripts/objective.gd<>res://scripts/bed_return.gd
-level_2.tscn::PackedScene::19886464779544::1780065558::0::1::::<><><>0<>0<><>::res://scripts/noise_object.gd<>res://scripts/hide_spot.gd<>res://scripts/objective.gd<>res://scripts/bed_return.gd
+level_1.tscn::PackedScene::19886464740240::1780065522::0::1::::<><><>0<>0<><>::res://entities/player.tscn<>res://entities/dad.tscn<>res://entities/noise_object.tscn<>res://entities/hide_spot.tscn<>res://entities/objective.tscn
+level_2.tscn::PackedScene::19886464779544::1780065558::0::1::::<><><>0<>0<><>::res://entities/noise_object.tscn<>res://entities/hide_spot.tscn<>res://entities/objective.tscn
 ::res://scenes/::1780065575
-game.tscn::PackedScene::9285049520::1780065575::0::1::::<><><>0<>0<><>::res://scripts/game.gd<>res://entities/player.tscn<>res://entities/dad.tscn<>res://scenes/hud.tscn<>res://scripts/virtual_joystick.gd
+game.tscn::PackedScene::9285049520::1780065575::0::1::::<><><>0<>0<><>::res://scripts/game.gd<>res://entities/player.tscn<>res://entities/dad.tscn<>res://scenes/hud.tscn
 hud.tscn::PackedScene::344922376::1779989805::0::1::::<><><>0<>0<><>::res://scripts/hud.gd
 lose_screen.tscn::PackedScene::17653185552::1779989805::0::1::::<><><>0<>0<><>::res://scripts/lose_screen.gd
 main_menu.tscn::PackedScene::24787520941091264::1779993633::0::1::::<><><>0<>0<><>::res://scripts/main_menu.gd
