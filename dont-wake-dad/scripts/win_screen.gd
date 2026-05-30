@@ -38,8 +38,7 @@ func _stars_flavor(stars: int) -> String:
 		_: return "YOU SURVIVED 😅"
 
 func _on_next() -> void:
-	GameManager.advance_level()
-	GameManager.go_to_game()
+	GameManager.go_to_game()  # generator picks a new random room + mission each run
 
 func _on_retry() -> void:
 	GameManager.go_to_game()

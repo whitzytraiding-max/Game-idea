@@ -257,64 +257,102 @@ func _play_jump_scare() -> void:
 	if _ambience_player: _ambience_player.volume_db = -80
 	if _heartbeat_player: _heartbeat_player.stop()
 
-	# 2. Tension pause — 0.4s of pure silence
-	await get_tree().create_timer(0.4).timeout
+	# 2. Tension pause — 0.45s of silence
+	await get_tree().create_timer(0.45).timeout
 
-	# 3. Door slam + horror sting hit together
+	# 3. Door slam + horror sting at same moment
 	_play_oneshot("res://audio/sfx/door_slam.wav", 10.0)
 	_play_oneshot("res://audio/sfx/horror_sting.wav", 7.0)
 	add_screen_shake(1.0)
 
-	# 4. Instant WHITE FLASH
+	# 4. Instant WHITE FLASH — labels stay hidden during face scare
 	if _jump_scare_bg: _jump_scare_bg.color = Color(1, 1, 1, 1)
 	if _jump_scare: _jump_scare.visible = true
-	if _jump_scare_face: _jump_scare_face.modulate = Color(1, 1, 1, 0)
-	if _jump_scare_text: _jump_scare_text.modulate = Color(1, 1, 1, 0)
+	if _jump_scare_face: _jump_scare_face.visible = false
+	if _jump_scare_text: _jump_scare_text.visible = false
 
 	await get_tree().create_timer(0.06).timeout
 
-	# 5. Slam to deep red — big angry text, no emoji
-	if _jump_scare_bg: _jump_scare_bg.color = Color(0.08, 0.0, 0.0, 1)
-	if _jump_scare_face:
-		_jump_scare_face.text = "DAD\nIS\nAWAKE"
-		_jump_scare_face.add_theme_font_size_override("font_size", 72)
-		_jump_scare_face.modulate = Color(1.0, 0.05, 0.05, 1)
-	if _jump_scare_text:
-		_jump_scare_text.text = "RUN  OR  HIDE"
-		_jump_scare_text.add_theme_font_size_override("font_size", 22)
-		_jump_scare_text.modulate = Color(1.0, 0.3, 0.3, 1)
+	# 5. Slam to deep red — polygon face starts zooming in
+	if _jump_scare_bg: _jump_scare_bg.color = Color(0.05, 0.0, 0.0, 1)
 	add_screen_shake(1.0)
 
-	# 6. Deep scary dad yell on DadVoice bus
-	await get_tree().create_timer(0.1).timeout
+	var face: Node2D = _build_scare_face()
+	face.position = Vector2(195, 360)
+	face.scale = Vector2(0.4, 0.4)
+	face.modulate.a = 0.0
+	_jump_scare.add_child(face)
+
+	var zoom := create_tween().set_parallel(true)
+	zoom.tween_property(face, "scale", Vector2(20, 20), 0.30).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	zoom.tween_property(face, "modulate:a", 1.0, 0.08)
+
+	# 6. Deep dad yell just as face fills screen
+	await get_tree().create_timer(0.12).timeout
 	_play_dad_voice_oneshot("res://audio/dad/dad_got_you.wav", 4.0)
 
-	# 7. Rapid shake pulses while text is up
+	# 7. Shake pulses while face is at full size
 	for _i in range(3):
-		await get_tree().create_timer(0.18).timeout
-		add_screen_shake(0.5)
+		await get_tree().create_timer(0.22).timeout
+		add_screen_shake(0.55)
 
-	await get_tree().create_timer(0.6).timeout
+	await get_tree().create_timer(0.45).timeout
 
 	# 8. Fade out fast
-	if _jump_scare:
-		var tween := create_tween().set_parallel(true)
-		if _jump_scare_bg:   tween.tween_property(_jump_scare_bg,   "modulate:a", 0.0, 0.25)
-		if _jump_scare_face: tween.tween_property(_jump_scare_face, "modulate:a", 0.0, 0.25)
-		if _jump_scare_text: tween.tween_property(_jump_scare_text, "modulate:a", 0.0, 0.25)
-		tween.chain().tween_callback(func():
-			if _jump_scare: _jump_scare.visible = false
-			if _jump_scare_bg:
-				_jump_scare_bg.color    = Color(0, 0, 0, 1)
-				_jump_scare_bg.modulate = Color(1, 1, 1, 1)
-			if _jump_scare_face: _jump_scare_face.modulate = Color(1, 1, 1, 1)
-			if _jump_scare_text: _jump_scare_text.modulate = Color(1, 1, 1, 1)
-		)
+	var fade := create_tween().set_parallel(true)
+	if _jump_scare_bg: fade.tween_property(_jump_scare_bg, "modulate:a", 0.0, 0.22)
+	fade.tween_property(face, "modulate:a", 0.0, 0.18)
+	fade.chain().tween_callback(func():
+		if _jump_scare: _jump_scare.visible = false
+		if _jump_scare_bg:
+			_jump_scare_bg.color    = Color(0, 0, 0, 1)
+			_jump_scare_bg.modulate = Color(1, 1, 1, 1)
+		if _jump_scare_face: _jump_scare_face.visible = true
+		if _jump_scare_text: _jump_scare_text.visible = true
+		if is_instance_valid(face): face.queue_free()
+	)
 
-	# 9. Chase music in hard right after fade
+	# 9. Chase music slams in
 	if _music_player and _music_player.stream:
 		_music_player.volume_db = -10
 		_music_player.play()
+
+func _build_scare_face() -> Node2D:
+	var root := Node2D.new()
+	root.name = "ScareFace"
+	# Bathrobe body
+	_sp(root, [[-15,-5],[15,-5],[17,8],[12,22],[-12,22],[-17,8]], Color(0.45,0.04,0.04,1))
+	# Head
+	_sp(root, [[-12,-10],[0,-17],[12,-10],[13,4],[0,10],[-13,4]], Color(0.72,0.28,0.22,1), Vector2(0,-28))
+	# Hair
+	_sp(root, [[-12,-10],[-2,-18],[6,-16],[12,-10],[8,-6],[-8,-6]], Color(0.14,0.10,0.10,1), Vector2(0,-28))
+	# Left brow — extreme angry inward angle
+	_sp(root, [[-14,-8],[-1,0],[-1,3],[-14,-4]], Color(0.04,0.02,0.02,1), Vector2(0,-28))
+	# Right brow
+	_sp(root, [[1,0],[14,-8],[14,-4],[1,3]], Color(0.04,0.02,0.02,1), Vector2(0,-28))
+	# Left eye — glowing red
+	_sp(root, [[-5,-4],[5,-4],[5,4],[-5,4]], Color(1.0,0.06,0.04,1), Vector2(-4,-31))
+	# Right eye
+	_sp(root, [[-5,-4],[5,-4],[5,4],[-5,4]], Color(1.0,0.06,0.04,1), Vector2(4,-31))
+	# Open grimacing mouth
+	_sp(root, [[-10,0],[10,0],[8,10],[0,12],[-8,10]], Color(0.03,0.01,0.01,1), Vector2(0,-21))
+	# Teeth
+	_sp(root, [[-9,1],[9,1],[8,6],[-8,6]], Color(0.88,0.84,0.80,1), Vector2(0,-21))
+	# Tooth gap (middle)
+	_sp(root, [[-1,1],[1,1],[1,6],[-1,6]], Color(0.03,0.01,0.01,1), Vector2(0,-21))
+	# Beard shadow
+	_sp(root, [[-9,4],[9,4],[8,11],[0,13],[-8,11]], Color(0.28,0.18,0.18,0.7), Vector2(0,-28))
+	return root
+
+func _sp(parent: Node2D, pts: Array, col: Color, offset: Vector2 = Vector2.ZERO) -> void:
+	var p := Polygon2D.new()
+	var pv := PackedVector2Array()
+	for pt: Array in pts:
+		pv.append(Vector2(pt[0], pt[1]))
+	p.polygon = pv
+	p.color = col
+	p.position = offset
+	parent.add_child(p)
 
 func _on_dad_returned() -> void:
 	for spot in _hide_spots:

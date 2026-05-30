@@ -18,6 +18,9 @@ func _ready() -> void:
 	GameManager.phase_one_complete.connect(_on_phase_one_complete)
 	if _prompt:
 		_prompt.visible = false
+	# Hidden until player needs to return
+	if _visual:
+		_visual.color = Color(0.18, 0.26, 0.50, 0.0)
 
 func _on_phase_one_complete(_obj: String) -> void:
 	activate()
@@ -25,10 +28,15 @@ func _on_phase_one_complete(_obj: String) -> void:
 func activate() -> void:
 	active = true
 	if _visual:
-		# Pulse gold to signal the player
-		var tween := create_tween().set_loops()
-		tween.tween_property(_visual, "color", Color(1.0, 0.88, 0.1, 0.95), 0.45)
-		tween.tween_property(_visual, "color", Color(0.3, 0.38, 0.6, 0.9),  0.45)
+		# Flash white briefly then settle into gold pulse
+		var tween := create_tween()
+		tween.tween_property(_visual, "color", Color(1.0, 1.0, 1.0, 1.0), 0.08)
+		tween.tween_property(_visual, "color", Color(1.0, 0.88, 0.1, 0.95), 0.12)
+		tween.tween_callback(func():
+			var loop := create_tween().set_loops()
+			loop.tween_property(_visual, "color", Color(1.0, 0.95, 0.15, 0.95), 0.4)
+			loop.tween_property(_visual, "color", Color(0.85, 0.55, 0.05, 0.55), 0.4)
+		)
 	if _prompt and _player_inside:
 		_prompt.visible = true
 		_prompt.text = "TAP TO SLEEP 🛏️"

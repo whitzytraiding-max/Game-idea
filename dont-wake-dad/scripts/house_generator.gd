@@ -297,8 +297,8 @@ func _build_kitchen(c: Node2D, is_obj: bool) -> void:
 	_outlined_rect(c, table_x + 152.0, table_y + 6.0, 22.0, 32.0,
 		Color(0.25, 0.18, 0.10, 1.0), Color(0.12, 0.08, 0.04, 1.0))
 
-	_add_hide_spot(c, Vector2(WALL_T + 10.0, counter_y + 52.0), "under counter")
-	_add_hide_spot(c, Vector2(table_x + 20.0, table_y + 20.0), "under table")
+	_add_hide_spot(c, Vector2(counter_x + 126.0, counter_y + 24.0), "under counter", 248.0, 44.0)
+	_add_hide_spot(c, Vector2(table_x + 74.0, table_y + 31.0), "under table", 148.0, 62.0)
 
 	if is_obj:
 		_add_objective(c, Vector2(fridge_x + 38.0, fridge_y + 70.0))
@@ -362,8 +362,8 @@ func _build_living_room(c: Node2D, is_obj: bool) -> void:
 	_color_rect(c, couch_x + 107.0, couch_y + 32.0, 3.0, 34.0, Color(0.12, 0.06, 0.18, 0.6))
 	_color_rect(c, couch_x + 170.0, couch_y + 32.0, 3.0, 34.0, Color(0.12, 0.06, 0.18, 0.6))
 
-	_add_hide_spot(c, Vector2(couch_x + 20.0, couch_y + 32.0), "behind couch")
-	_add_hide_spot(c, Vector2(280.0, tv_y + 32.0), "behind curtain")
+	_add_hide_spot(c, Vector2(couch_x + 140.0, couch_y + 34.0), "behind couch", 280.0, 68.0)
+	_add_hide_spot(c, Vector2(280.0, tv_y + 22.0), "behind curtain", 90.0, 42.0)
 
 	if is_obj:
 		_add_objective(c, Vector2(tv_x + 85.0, tv_y + 10.0))
@@ -414,8 +414,8 @@ func _build_bathroom(c: Node2D, is_obj: bool) -> void:
 	_surface_highlight(c, sink_x, WALL_T + 6.0, 26.0, 0.18)
 	_shadow_line(c, sink_x - 2.0, WALL_T + 112.0, 50.0)
 
-	_add_hide_spot(c, Vector2(tub_x + 12.0, tub_y + 12.0), "in bathtub")
-	_add_hide_spot(c, Vector2(WALL_T + 4.0, ROOM_H - 100.0), "behind door")
+	_add_hide_spot(c, Vector2(tub_x + 86.0, tub_y + 48.0), "in bathtub", 168.0, 90.0)
+	_add_hide_spot(c, Vector2(WALL_T + 30.0, ROOM_H - 80.0), "behind door", 56.0, 80.0)
 
 	if is_obj:
 		_add_objective(c, Vector2(tlt_x + 4.0, tlt_y + 40.0))
@@ -478,8 +478,8 @@ func _build_kids_room(c: Node2D) -> void:
 		Color(0.70, 0.60, 0.30, 0.9), Color(0.30, 0.24, 0.16, 1.0))
 	_surface_highlight(c, ns_x + 6.0, ns_y - 32.0, 14.0, 0.20)
 
-	_add_hide_spot(c, Vector2(bed_x + 10.0, bed_y + 30.0), "under bed")
-	_add_hide_spot(c, Vector2(desk_x + 4.0, desk_y + 14.0), "under desk")
+	_add_hide_spot(c, Vector2(bed_x + 89.0, bed_y + 49.0), "under bed", 178.0, 98.0)
+	_add_hide_spot(c, Vector2(desk_x + 48.0, desk_y + 25.0), "under desk", 96.0, 50.0)
 	_add_bed_return(c)
 
 # ── DAD'S ROOM ────────────────────────────────────────────────────────────────
@@ -532,11 +532,11 @@ func _build_dads_room(c: Node2D) -> void:
 	_color_rect(c, ward_x + 30.0, ward_y + 42.0, 8.0, 4.0, Color(0.38, 0.30, 0.22, 1.0))
 	_color_rect(c, ward_x + 30.0, ward_y + 138.0, 8.0, 4.0, Color(0.38, 0.30, 0.22, 1.0))
 
-	_add_hide_spot(c, Vector2(ward_x + 4.0, ward_y + 100.0), "in wardrobe")
+	_add_hide_spot(c, Vector2(ward_x + 36.0, ward_y + 96.0), "in wardrobe", 72.0, 192.0)
 
 # ── Entity spawners ──────────────────────────────────────────────────────────
 
-func _add_hide_spot(parent: Node2D, pos: Vector2, spot_name: String) -> void:
+func _add_hide_spot(parent: Node2D, pos: Vector2, spot_name: String, w: float = 80.0, h: float = 50.0) -> void:
 	var scene: PackedScene = load("res://entities/hide_spot.tscn")
 	if not scene:
 		return
@@ -544,6 +544,20 @@ func _add_hide_spot(parent: Node2D, pos: Vector2, spot_name: String) -> void:
 	hs.position = pos
 	if hs.get("spot_name") != null:
 		hs.spot_name = spot_name
+	# Resize collision shape to match the actual furniture piece
+	var col: Node = hs.get_node_or_null("CollisionShape2D")
+	if col and col.shape is RectangleShape2D:
+		var new_shape := RectangleShape2D.new()
+		new_shape.size = Vector2(w, h)
+		col.shape = new_shape
+	# Resize visual polygon to same footprint (invisible by default, outline when nearby)
+	var vis: Node = hs.get_node_or_null("Visual")
+	if vis:
+		var hw: float = w * 0.5
+		var hh: float = h * 0.5
+		vis.polygon = PackedVector2Array([
+			Vector2(-hw, -hh), Vector2(hw, -hh), Vector2(hw, hh), Vector2(-hw, hh)
+		])
 	parent.add_child(hs)
 
 func _add_objective(parent: Node2D, pos: Vector2) -> void:
