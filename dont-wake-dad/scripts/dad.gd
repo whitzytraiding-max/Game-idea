@@ -69,11 +69,6 @@ func _load_audio() -> void:
 		_snore_audio.pitch_scale = 0.62
 		_snore_audio.bus = "DadVoice"
 		_snore_audio.finished.connect(_on_snore_finished)
-	var yell: Resource = load("res://audio/dad/dad_got_you.wav")
-	if yell and _yell_audio:
-		_yell_audio.stream = yell
-		_yell_audio.pitch_scale = 0.60
-		_yell_audio.bus = "DadVoice"
 	var step: Resource = load("res://audio/dad/dad_footstep.wav")
 	if step and _footstep_audio:
 		_footstep_audio.stream = step
@@ -190,8 +185,6 @@ func _enter_chase() -> void:
 		if _glow_l: tween.tween_property(_glow_l, "color:a", 1.0, 0.25)
 		if _glow_r: tween.tween_property(_glow_r, "color:a", 1.0, 0.25)
 		if _angry_aura: tween.tween_property(_angry_aura, "energy", 1.8, 0.4)
-	if _yell_audio and _yell_audio.stream:
-		_yell_audio.play()
 	dad_woke_up.emit()
 	# Delayed angry shout after jump scare settles
 	await get_tree().create_timer(1.8).timeout

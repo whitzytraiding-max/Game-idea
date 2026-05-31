@@ -12,8 +12,6 @@ extends Node2D
 @onready var _phase_sub: Label            = $PhaseAnnounce/PhaseSubLabel
 @onready var _jump_scare: CanvasLayer     = $JumpScare
 @onready var _jump_scare_bg: ColorRect   = $JumpScare/BG
-@onready var _jump_scare_face: Label     = $JumpScare/DadFaceLabel
-@onready var _jump_scare_text: Label     = $JumpScare/JumpText
 @onready var _ambience_player: AudioStreamPlayer = $AmbiencePlayer
 @onready var _heartbeat_player: AudioStreamPlayer = $HeartbeatPlayer
 @onready var _music_player: AudioStreamPlayer = $MusicPlayer
@@ -265,94 +263,38 @@ func _play_jump_scare() -> void:
 	_play_oneshot("res://audio/sfx/horror_sting.wav", 7.0)
 	add_screen_shake(1.0)
 
-	# 4. Instant WHITE FLASH — labels stay hidden during face scare
-	if _jump_scare_bg: _jump_scare_bg.color = Color(1, 1, 1, 1)
+	# 4. Instant white flash
+	if _jump_scare_bg:
+		_jump_scare_bg.color = Color(1, 1, 1, 1)
+		_jump_scare_bg.modulate = Color(1, 1, 1, 1)
 	if _jump_scare: _jump_scare.visible = true
-	if _jump_scare_face: _jump_scare_face.visible = false
-	if _jump_scare_text: _jump_scare_text.visible = false
 
 	await get_tree().create_timer(0.06).timeout
 
-	# 5. Slam to deep red — polygon face starts zooming in
-	if _jump_scare_bg: _jump_scare_bg.color = Color(0.05, 0.0, 0.0, 1)
+	# 5. Slam to deep red — chase music kicks in at the same moment
+	if _jump_scare_bg: _jump_scare_bg.color = Color(0.6, 0.0, 0.0, 1)
 	add_screen_shake(1.0)
-
-	var face: Node2D = _build_scare_face()
-	face.position = Vector2(195, 360)
-	face.scale = Vector2(0.4, 0.4)
-	face.modulate.a = 0.0
-	_jump_scare.add_child(face)
-
-	var zoom := create_tween().set_parallel(true)
-	zoom.tween_property(face, "scale", Vector2(20, 20), 0.30).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
-	zoom.tween_property(face, "modulate:a", 1.0, 0.08)
-
-	# 6. Deep dad yell just as face fills screen
-	await get_tree().create_timer(0.12).timeout
-	_play_dad_voice_oneshot("res://audio/dad/dad_got_you.wav", 4.0)
-
-	# 7. Shake pulses while face is at full size
-	for _i in range(3):
-		await get_tree().create_timer(0.22).timeout
-		add_screen_shake(0.55)
-
-	await get_tree().create_timer(0.45).timeout
-
-	# 8. Fade out fast
-	var fade := create_tween().set_parallel(true)
-	if _jump_scare_bg: fade.tween_property(_jump_scare_bg, "modulate:a", 0.0, 0.22)
-	fade.tween_property(face, "modulate:a", 0.0, 0.18)
-	fade.chain().tween_callback(func():
-		if _jump_scare: _jump_scare.visible = false
-		if _jump_scare_bg:
-			_jump_scare_bg.color    = Color(0, 0, 0, 1)
-			_jump_scare_bg.modulate = Color(1, 1, 1, 1)
-		if _jump_scare_face: _jump_scare_face.visible = true
-		if _jump_scare_text: _jump_scare_text.visible = true
-		if is_instance_valid(face): face.queue_free()
-	)
-
-	# 9. Chase music slams in
 	if _music_player and _music_player.stream:
 		_music_player.volume_db = -10
 		_music_player.play()
 
-func _build_scare_face() -> Node2D:
-	var root := Node2D.new()
-	root.name = "ScareFace"
-	# Bathrobe body
-	_sp(root, [[-15,-5],[15,-5],[17,8],[12,22],[-12,22],[-17,8]], Color(0.45,0.04,0.04,1))
-	# Head
-	_sp(root, [[-12,-10],[0,-17],[12,-10],[13,4],[0,10],[-13,4]], Color(0.72,0.28,0.22,1), Vector2(0,-28))
-	# Hair
-	_sp(root, [[-12,-10],[-2,-18],[6,-16],[12,-10],[8,-6],[-8,-6]], Color(0.14,0.10,0.10,1), Vector2(0,-28))
-	# Left brow — extreme angry inward angle
-	_sp(root, [[-14,-8],[-1,0],[-1,3],[-14,-4]], Color(0.04,0.02,0.02,1), Vector2(0,-28))
-	# Right brow
-	_sp(root, [[1,0],[14,-8],[14,-4],[1,3]], Color(0.04,0.02,0.02,1), Vector2(0,-28))
-	# Left eye — glowing red
-	_sp(root, [[-5,-4],[5,-4],[5,4],[-5,4]], Color(1.0,0.06,0.04,1), Vector2(-4,-31))
-	# Right eye
-	_sp(root, [[-5,-4],[5,-4],[5,4],[-5,4]], Color(1.0,0.06,0.04,1), Vector2(4,-31))
-	# Open grimacing mouth
-	_sp(root, [[-10,0],[10,0],[8,10],[0,12],[-8,10]], Color(0.03,0.01,0.01,1), Vector2(0,-21))
-	# Teeth
-	_sp(root, [[-9,1],[9,1],[8,6],[-8,6]], Color(0.88,0.84,0.80,1), Vector2(0,-21))
-	# Tooth gap (middle)
-	_sp(root, [[-1,1],[1,1],[1,6],[-1,6]], Color(0.03,0.01,0.01,1), Vector2(0,-21))
-	# Beard shadow
-	_sp(root, [[-9,4],[9,4],[8,11],[0,13],[-8,11]], Color(0.28,0.18,0.18,0.7), Vector2(0,-28))
-	return root
+	# 6. A few shake pulses while the red screen holds
+	for _i in range(3):
+		await get_tree().create_timer(0.20).timeout
+		add_screen_shake(0.5)
 
-func _sp(parent: Node2D, pts: Array, col: Color, offset: Vector2 = Vector2.ZERO) -> void:
-	var p := Polygon2D.new()
-	var pv := PackedVector2Array()
-	for pt: Array in pts:
-		pv.append(Vector2(pt[0], pt[1]))
-	p.polygon = pv
-	p.color = col
-	p.position = offset
-	parent.add_child(p)
+	await get_tree().create_timer(0.25).timeout
+
+	# 7. Fade red screen out — game world resumes with dad chasing
+	if _jump_scare_bg:
+		var fade := create_tween()
+		fade.tween_property(_jump_scare_bg, "modulate:a", 0.0, 0.40)
+		fade.tween_callback(func():
+			if _jump_scare: _jump_scare.visible = false
+			if _jump_scare_bg:
+				_jump_scare_bg.color    = Color(0, 0, 0, 1)
+				_jump_scare_bg.modulate = Color(1, 1, 1, 1)
+		)
 
 func _on_dad_returned() -> void:
 	for spot in _hide_spots:
