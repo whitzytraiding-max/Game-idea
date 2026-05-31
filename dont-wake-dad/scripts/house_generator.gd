@@ -44,21 +44,27 @@ func generate(required_room: String, num_middle: int) -> Node2D:
 		middle.append(pool[i])
 	middle.shuffle()
 
-	# Sections: objective rooms at top, hallways between them,
-	# then one hallway into the shared bottom floor (Dad | Kid).
-	var sections: Array = []
-	for i in range(middle.size()):
-		sections.append({"kind": "room",  "rtype": middle[i]})
-		sections.append({"kind": "hall"})
-	sections.append({"kind": "split"})   # Dad's Room | Kid's Room
+	# Layout top → bottom:
+	#   Dad's Room  ←  far end of the house
+	#   hallway
+	#   common room(s) with hallways between them  ←  objective is here
+	#   hallway
+	#   Kid's Room  ←  player starts here
+	#
+	# Player must sneak UP through the whole house past the common rooms,
+	# grab the item, and race back before Dad charges down from the top.
 
-	# Total height
+	var sections: Array = []
+	sections.append({"kind": "room", "rtype": "dads_room", "is_obj": false})
+	sections.append({"kind": "hall"})
+	for i in range(middle.size()):
+		sections.append({"kind": "room", "rtype": middle[i], "is_obj": middle[i] == required_room})
+		sections.append({"kind": "hall"})
+	sections.append({"kind": "room", "rtype": "kids_room", "is_obj": false})
+
 	var total_h: float = 0.0
 	for s in sections:
-		match s["kind"]:
-			"room":  total_h += ROOM_H
-			"hall":  total_h += HALL_H
-			"split": total_h += ROOM_H
+		total_h += ROOM_H if s["kind"] == "room" else HALL_H
 
 	var root := Node2D.new()
 	root.name = "GeneratedHouse"
@@ -70,193 +76,33 @@ func generate(required_room: String, num_middle: int) -> Node2D:
 	root.add_child(bg)
 
 	var y: float = 0.0
-	var split_y: float = 0.0
+	var kids_room_y: float = total_h - ROOM_H  # always the last section
+	var dads_room_y: float = 0.0               # always the first section
 
 	for i in range(sections.size()):
 		var s: Dictionary = sections[i]
-		match s["kind"]:
-			"room":
-				var north := (i > 0)
-				var south := (i < sections.size() - 1)
-				var is_obj: bool = (s["rtype"] == required_room)
-				_build_room(root, s["rtype"], y, north, south, is_obj)
-				y += ROOM_H
-			"hall":
-				_build_hallway(root, y)
-				y += HALL_H
-			"split":
-				split_y = y
-				_build_split_floor(root, y)
-				y += ROOM_H
+		if s["kind"] == "room":
+			var north_door := (i > 0)
+			var south_door := (i < sections.size() - 1)
+			_build_room(root, s["rtype"], y, north_door, south_door, s.get("is_obj", false))
+			y += ROOM_H
+		else:
+			_build_hallway(root, y)
+			y += HALL_H
 
-	# PlayerStart — near bed in Kid's Room (right half)
+	# PlayerStart — near the kid's bed at the very bottom
 	var ps := Node2D.new()
 	ps.name = "PlayerStart"
-	ps.position = Vector2(SPLIT_X + (ROOM_W - SPLIT_X) * 0.5, split_y + ROOM_H * 0.74)
+	ps.position = Vector2(ROOM_W * 0.5, kids_room_y + ROOM_H * 0.74)
 	root.add_child(ps)
 
-	# DadStart — centre of Dad's Room (left half), near his bed
+	# DadStart — in his room at the very top
 	var ds := Node2D.new()
 	ds.name = "DadStart"
-	ds.position = Vector2(SPLIT_X * 0.42, split_y + ROOM_H * 0.36)
+	ds.position = Vector2(ROOM_W * 0.38, dads_room_y + ROOM_H * 0.40)
 	root.add_child(ds)
 
 	return root
-
-# ── Split floor (Dad's Room LEFT | Kid's Room RIGHT) ─────────────────────────
-
-func _build_split_floor(root: Node2D, y_off: float) -> void:
-	var c := Node2D.new()
-	c.name = "split_floor"
-	c.position = Vector2(0.0, y_off)
-	root.add_child(c)
-
-	# Two floor colours — left dad, right kid
-	_color_rect(c, 0.0, 0.0, SPLIT_X, ROOM_H, Color(0.10, 0.07, 0.08, 1.0))
-	_color_rect(c, SPLIT_X, 0.0, ROOM_W - SPLIT_X, ROOM_H, Color(0.08, 0.09, 0.13, 1.0))
-
-	# Floor plank lines on each half
-	_floor_planks(c, WALL_T, WALL_T, CENTRE_X - WALL_T, ROOM_H - WALL_T * 2.0)
-	_floor_planks(c, CENTRE_X + CENTRE_W, WALL_T, ROOM_W - WALL_T - CENTRE_X - CENTRE_W, ROOM_H - WALL_T * 2.0)
-
-	# Outer walls
-	_north_wall(c, true)   # hallway above connects through centre gap
-	_south_wall(c, false)  # bottom of house — solid
-	_wall_rect(c, 0.0, WALL_T, WALL_T, ROOM_H - WALL_T * 2.0)
-	_wall_rect(c, ROOM_W - WALL_T, WALL_T, WALL_T, ROOM_H - WALL_T * 2.0)
-
-	# Centre dividing wall — solid top/bottom, door in upper-middle section
-	var door_y: float  = ROOM_H * 0.20
-	var door_h: float  = ROOM_H * 0.42
-	if door_y - WALL_T > 2.0:
-		_wall_rect(c, CENTRE_X, WALL_T, CENTRE_W, door_y - WALL_T)
-	_wall_rect(c, CENTRE_X, door_y + door_h, CENTRE_W, ROOM_H - WALL_T - door_y - door_h)
-	# Door visuals
-	_color_rect(c, CENTRE_X, door_y, CENTRE_W, door_h, DOOR_COLOR)
-	_color_rect(c, CENTRE_X - 3.0, door_y - 4.0, 3.0, door_h + 4.0, DOOR_TRIM)
-	_color_rect(c, CENTRE_X + CENTRE_W, door_y - 4.0, 3.0, door_h + 4.0, DOOR_TRIM)
-
-	# Wall detail (chair rails, baseboards) on outer and centre walls
-	_split_wall_details(c)
-
-	# Room labels
-	_split_label(c, "DAD'S ROOM", WALL_T + 6.0)
-	_split_label(c, "YOUR ROOM",  SPLIT_X + 6.0)
-
-	# Room contents
-	_build_dads_room_half(c)
-	_build_kids_room_half(c)
-
-func _split_wall_details(c: Node2D) -> void:
-	var rail_y: float = WALL_T + (ROOM_H - WALL_T * 2.0) * 0.30
-	var base_y: float = ROOM_H - WALL_T - 7.0
-	# Left outer wall
-	_color_rect(c, 0.0, WALL_T, WALL_T, ROOM_H - WALL_T * 2.0, Color(0.12, 0.09, 0.10, 1.0))
-	_color_rect(c, 0.0, rail_y, WALL_T, 4.0, Color(0.28, 0.22, 0.16, 0.7))
-	_color_rect(c, 0.0, base_y, WALL_T, 7.0, Color(0.20, 0.16, 0.14, 0.8))
-	# Right outer wall
-	_color_rect(c, ROOM_W - WALL_T, WALL_T, WALL_T, ROOM_H - WALL_T * 2.0, Color(0.09, 0.10, 0.14, 1.0))
-	_color_rect(c, ROOM_W - WALL_T, rail_y, WALL_T, 4.0, Color(0.28, 0.22, 0.16, 0.7))
-	_color_rect(c, ROOM_W - WALL_T, base_y, WALL_T, 7.0, Color(0.20, 0.16, 0.14, 0.8))
-
-func _split_label(c: Node2D, text: String, x: float) -> void:
-	_outlined_rect(c, x, WALL_T + 6.0, 82.0, 14.0,
-		Color(0.18, 0.14, 0.10, 1.0), Color(0.30, 0.22, 0.14, 1.0), 1.5)
-	var lbl := Label.new()
-	lbl.text = text
-	lbl.position = Vector2(x + 2.0, WALL_T + 5.0)
-	lbl.add_theme_font_size_override("font_size", 9)
-	lbl.modulate = Color(0.70, 0.62, 0.48, 0.9)
-	c.add_child(lbl)
-
-# ── Dad's half (left, x=14…CENTRE_X) ─────────────────────────────────────────
-
-func _build_dads_room_half(c: Node2D) -> void:
-	var rx: float = WALL_T          # left edge of usable area
-	var rw: float = CENTRE_X - rx  # ~174px usable width
-
-	# Wardrobe against left wall
-	_shadow_line(c, rx + 2.0, WALL_T + 152.0, 54.0)
-	_outlined_rect(c, rx + 2.0, WALL_T + 10.0, 54.0, 142.0,
-		Color(0.18, 0.10, 0.08, 1.0), Color(0.06, 0.04, 0.03, 1.0), 2.5)
-	_color_rect(c, rx + 5.0, WALL_T + 14.0, 22.0, 58.0, Color(0.14, 0.08, 0.06, 1.0))
-	_color_rect(c, rx + 30.0, WALL_T + 14.0, 22.0, 58.0, Color(0.14, 0.08, 0.06, 1.0))
-	_color_rect(c, rx + 5.0, WALL_T + 80.0, 22.0, 66.0, Color(0.14, 0.08, 0.06, 1.0))
-	_color_rect(c, rx + 30.0, WALL_T + 80.0, 22.0, 66.0, Color(0.14, 0.08, 0.06, 1.0))
-	_color_rect(c, rx + 22.0, WALL_T + 40.0, 8.0, 4.0, Color(0.38, 0.30, 0.22, 1.0))
-	_color_rect(c, rx + 22.0, WALL_T + 106.0, 8.0, 4.0, Color(0.38, 0.30, 0.22, 1.0))
-
-	# Bed — centred right portion of left half
-	var bx: float = rx + 60.0
-	var by: float = ROOM_H - 128.0
-	_shadow_line(c, bx, by + 112.0, rw - 62.0)
-	_outlined_rect(c, bx, by, rw - 62.0, 112.0,
-		Color(0.22, 0.10, 0.10, 1.0), Color(0.08, 0.04, 0.04, 1.0), 2.5)
-	_color_rect(c, bx + 3.0, by + 4.0, rw - 68.0, 96.0, Color(0.30, 0.14, 0.14, 1.0))
-	_color_rect(c, bx + 3.0, by + 22.0, rw - 68.0, 74.0, Color(0.18, 0.08, 0.08, 1.0))
-	_color_rect(c, bx + 3.0, by + 22.0, rw - 68.0, 8.0, Color(0.28, 0.12, 0.12, 1.0))
-	_outlined_rect(c, bx + 6.0, by + 5.0, 48.0, 18.0,
-		Color(0.65, 0.60, 0.58, 1.0), Color(0.35, 0.28, 0.28, 1.0))
-	_surface_highlight(c, bx + 8.0, by + 7.0, 28.0, 0.10)
-	_color_rect(c, bx - 3.0, by - 9.0, rw - 56.0, 12.0, Color(0.14, 0.06, 0.06, 1.0))
-
-	# Nightstand
-	_outlined_rect(c, CENTRE_X - 34.0, by + 10.0, 28.0, 40.0,
-		Color(0.20, 0.10, 0.08, 1.0), Color(0.08, 0.04, 0.04, 1.0))
-	# Alarm clock
-	_outlined_rect(c, CENTRE_X - 30.0, by - 8.0, 20.0, 14.0,
-		Color(0.15, 0.15, 0.18, 1.0), Color(0.06, 0.06, 0.08, 1.0))
-	_color_rect(c, CENTRE_X - 28.0, by - 6.0, 16.0, 10.0, Color(0.05, 0.55, 0.10, 0.8))
-
-	_add_hide_spot(c, Vector2(rx + 29.0, WALL_T + 81.0), "in wardrobe", 54.0, 142.0)
-
-# ── Kid's half (right, x=CENTRE_X+CENTRE_W…ROOM_W-WALL_T) ───────────────────
-
-func _build_kids_room_half(c: Node2D) -> void:
-	var rx: float = CENTRE_X + CENTRE_W  # ~202
-	var rw: float = ROOM_W - WALL_T - rx  # ~174px usable
-
-	# Desk against centre wall (upper portion)
-	var dx: float = rx + 2.0
-	var dy: float = WALL_T + 10.0
-	_shadow_line(c, dx, dy + 48.0, 72.0)
-	_outlined_rect(c, dx, dy, 72.0, 10.0, Color(0.28, 0.20, 0.12, 1.0), Color(0.12, 0.08, 0.04, 1.0))
-	_surface_highlight(c, dx + 2.0, dy, 68.0, 0.10)
-	_color_rect(c, dx + 3.0, dy + 10.0, 8.0, 38.0, Color(0.22, 0.16, 0.10, 1.0))
-	_color_rect(c, dx + 61.0, dy + 10.0, 8.0, 38.0, Color(0.22, 0.16, 0.10, 1.0))
-	_outlined_rect(c, dx + 12.0, dy + 14.0, 46.0, 22.0, Color(0.24, 0.17, 0.10, 1.0), Color(0.12, 0.08, 0.04, 1.0))
-	_color_rect(c, dx + 30.0, dy + 21.0, 12.0, 5.0, Color(0.40, 0.32, 0.22, 1.0))
-
-	# Small star poster on right wall above desk
-	_outlined_rect(c, ROOM_W - WALL_T - 62.0, WALL_T + 4.0, 56.0, 30.0,
-		Color(0.12, 0.18, 0.28, 1.0), Color(0.08, 0.08, 0.10, 1.0))
-	_color_rect(c, ROOM_W - WALL_T - 52.0, WALL_T + 8.0, 8.0, 8.0, Color(0.9, 0.85, 0.2, 0.8))
-	_color_rect(c, ROOM_W - WALL_T - 38.0, WALL_T + 12.0, 5.0, 5.0, Color(0.9, 0.85, 0.2, 0.6))
-	_color_rect(c, ROOM_W - WALL_T - 24.0, WALL_T + 7.0, 7.0, 7.0, Color(0.9, 0.85, 0.2, 0.7))
-
-	# Bed — along the bottom of this half
-	var bx: float = rx + 4.0
-	var by: float = ROOM_H - 108.0
-	_shadow_line(c, bx, by + 98.0, rw - 6.0)
-	_outlined_rect(c, bx, by, rw - 6.0, 98.0,
-		Color(0.16, 0.22, 0.42, 1.0), Color(0.06, 0.08, 0.18, 1.0), 2.5)
-	_color_rect(c, bx + 3.0, by + 4.0, rw - 12.0, 82.0, Color(0.24, 0.32, 0.52, 1.0))
-	_color_rect(c, bx + 3.0, by + 22.0, rw - 12.0, 62.0, Color(0.18, 0.28, 0.55, 1.0))
-	_color_rect(c, bx + 3.0, by + 22.0, rw - 12.0, 8.0, Color(0.28, 0.40, 0.65, 1.0))
-	_surface_highlight(c, bx + 5.0, by + 24.0, 60.0, 0.08)
-	_outlined_rect(c, bx + 6.0, by + 5.0, 48.0, 18.0, Color(0.82, 0.82, 0.86, 1.0), Color(0.40, 0.42, 0.50, 1.0))
-	_surface_highlight(c, bx + 8.0, by + 7.0, 28.0, 0.14)
-	_color_rect(c, bx - 3.0, by - 8.0, rw - 1.0, 11.0, Color(0.10, 0.15, 0.30, 1.0))
-
-	# Nightstand (right side of bed)
-	var nx: float = ROOM_W - WALL_T - 32.0
-	_outlined_rect(c, nx, by + 10.0, 28.0, 40.0, Color(0.22, 0.16, 0.10, 1.0), Color(0.10, 0.07, 0.04, 1.0))
-	_color_rect(c, nx + 10.0, by - 12.0, 3.0, 14.0, Color(0.30, 0.24, 0.18, 1.0))
-	_outlined_rect(c, nx + 3.0, by - 22.0, 20.0, 12.0, Color(0.70, 0.60, 0.30, 0.9), Color(0.30, 0.24, 0.16, 1.0))
-
-	_add_hide_spot(c, Vector2(bx + (rw - 6.0) * 0.5, by + 49.0), "under bed", rw - 6.0, 98.0)
-	_add_hide_spot(c, Vector2(dx + 36.0, dy + 24.0), "under desk", 72.0, 48.0)
-	_add_bed_return(c, rx, by, rw)
 
 # ── Hallway ───────────────────────────────────────────────────────────────────
 
@@ -455,6 +301,8 @@ func _draw_room_sign(c: Node2D, rtype: String, x: float) -> void:
 
 func _room_content(c: Node2D, rtype: String, is_obj: bool) -> void:
 	match rtype:
+		"dads_room":    _build_dads_room(c)
+		"kids_room":    _build_kids_room(c)
 		"kitchen":      _build_kitchen(c, is_obj)
 		"living_room":  _build_living_room(c, is_obj)
 		"bathroom":     _build_bathroom(c, is_obj)
@@ -556,6 +404,131 @@ func _build_bathroom(c: Node2D, is_obj: bool) -> void:
 	if is_obj:
 		_add_objective(c, Vector2(tlt_x + 4.0, tlt_y + 38.0))
 
+# ── DAD'S ROOM (full width) ───────────────────────────────────────────────────
+
+func _build_dads_room(c: Node2D) -> void:
+	# Wardrobe — left wall
+	var wx: float = WALL_T + 4.0
+	var wy: float = WALL_T + 14.0
+	_shadow_line(c, wx, wy + 192.0, 76.0)
+	_outlined_rect(c, wx, wy, 76.0, 192.0,
+		Color(0.18, 0.10, 0.08, 1.0), Color(0.06, 0.04, 0.03, 1.0), 3.0)
+	_color_rect(c, wx + 4.0, wy + 6.0, 30.0, 80.0, Color(0.14, 0.08, 0.06, 1.0))
+	_color_rect(c, wx + 40.0, wy + 6.0, 30.0, 80.0, Color(0.14, 0.08, 0.06, 1.0))
+	_color_rect(c, wx + 4.0, wy + 94.0, 30.0, 90.0, Color(0.14, 0.08, 0.06, 1.0))
+	_color_rect(c, wx + 40.0, wy + 94.0, 30.0, 90.0, Color(0.14, 0.08, 0.06, 1.0))
+	_color_rect(c, wx + 32.0, wy + 42.0, 10.0, 4.0, Color(0.38, 0.30, 0.22, 1.0))
+	_color_rect(c, wx + 32.0, wy + 136.0, 10.0, 4.0, Color(0.38, 0.30, 0.22, 1.0))
+
+	# Bed — centred
+	var bx: float = 118.0
+	var by: float = ROOM_H - 140.0
+	_shadow_line(c, bx, by + 118.0, 210.0)
+	_outlined_rect(c, bx, by, 210.0, 118.0,
+		Color(0.22, 0.10, 0.10, 1.0), Color(0.08, 0.04, 0.04, 1.0), 3.0)
+	_color_rect(c, bx + 4.0, by + 4.0, 202.0, 102.0, Color(0.30, 0.14, 0.14, 1.0))
+	_color_rect(c, bx + 4.0, by + 24.0, 202.0, 78.0, Color(0.18, 0.08, 0.08, 1.0))
+	_color_rect(c, bx + 4.0, by + 24.0, 202.0, 9.0, Color(0.28, 0.12, 0.12, 1.0))
+	_surface_highlight(c, bx + 6.0, by + 26.0, 90.0, 0.07)
+	_outlined_rect(c, bx + 8.0, by + 5.0, 70.0, 22.0,
+		Color(0.65, 0.62, 0.60, 1.0), Color(0.35, 0.28, 0.28, 1.0))
+	_surface_highlight(c, bx + 10.0, by + 7.0, 38.0, 0.10)
+	_color_rect(c, bx - 5.0, by - 10.0, 220.0, 14.0, Color(0.14, 0.06, 0.06, 1.0))
+
+	# Nightstand + alarm clock — right of bed
+	var nx: float = bx + 214.0
+	var ny: float = by + 10.0
+	_outlined_rect(c, nx, ny, 44.0, 58.0,
+		Color(0.20, 0.10, 0.08, 1.0), Color(0.08, 0.04, 0.04, 1.0))
+	_outlined_rect(c, nx + 8.0, ny - 20.0, 28.0, 18.0,
+		Color(0.15, 0.15, 0.18, 1.0), Color(0.06, 0.06, 0.08, 1.0))
+	_color_rect(c, nx + 11.0, ny - 17.0, 22.0, 12.0, Color(0.05, 0.60, 0.10, 0.8))
+	_color_rect(c, nx + 10.0, ny, 5.0, 3.0, Color(0.15, 0.15, 0.18, 1.0))
+	_color_rect(c, nx + 27.0, ny, 5.0, 3.0, Color(0.15, 0.15, 0.18, 1.0))
+
+	_add_hide_spot(c, Vector2(wx + 38.0, wy + 96.0), "in wardrobe", 76.0, 192.0)
+
+# ── KID'S ROOM (full width) ───────────────────────────────────────────────────
+
+func _build_kids_room(c: Node2D) -> void:
+	# Desk — left side against wall
+	var dx: float = WALL_T + 4.0
+	var dy: float = WALL_T + 14.0
+	_shadow_line(c, dx, dy + 54.0, 100.0)
+	_outlined_rect(c, dx, dy, 100.0, 10.0,
+		Color(0.28, 0.20, 0.12, 1.0), Color(0.12, 0.08, 0.04, 1.0))
+	_surface_highlight(c, dx + 2.0, dy, 96.0, 0.10)
+	_color_rect(c, dx + 4.0, dy + 10.0, 10.0, 44.0, Color(0.22, 0.16, 0.10, 1.0))
+	_color_rect(c, dx + 86.0, dy + 10.0, 10.0, 44.0, Color(0.22, 0.16, 0.10, 1.0))
+	_outlined_rect(c, dx + 14.0, dy + 14.0, 64.0, 26.0,
+		Color(0.24, 0.17, 0.10, 1.0), Color(0.12, 0.08, 0.04, 1.0))
+	_color_rect(c, dx + 39.0, dy + 22.0, 14.0, 5.0, Color(0.40, 0.32, 0.22, 1.0))
+
+	# Star poster above desk
+	_outlined_rect(c, dx + 4.0, WALL_T + 4.0, 82.0, 34.0,
+		Color(0.12, 0.18, 0.28, 1.0), Color(0.08, 0.08, 0.10, 1.0))
+	_color_rect(c, dx + 12.0, WALL_T + 8.0, 8.0, 8.0, Color(0.9, 0.85, 0.2, 0.8))
+	_color_rect(c, dx + 28.0, WALL_T + 13.0, 5.0, 5.0, Color(0.9, 0.85, 0.2, 0.6))
+	_color_rect(c, dx + 46.0, WALL_T + 7.0, 7.0, 7.0, Color(0.9, 0.85, 0.2, 0.7))
+	_color_rect(c, dx + 62.0, WALL_T + 15.0, 5.0, 5.0, Color(0.9, 0.85, 0.2, 0.5))
+
+	# Bed — centred
+	var bx: float = 100.0
+	var by: float = ROOM_H - 128.0
+	_shadow_line(c, bx, by + 108.0, 210.0)
+	_outlined_rect(c, bx, by, 210.0, 108.0,
+		Color(0.16, 0.22, 0.42, 1.0), Color(0.06, 0.08, 0.18, 1.0), 3.0)
+	_color_rect(c, bx + 4.0, by + 4.0, 202.0, 92.0, Color(0.24, 0.32, 0.52, 1.0))
+	_color_rect(c, bx + 4.0, by + 24.0, 202.0, 72.0, Color(0.18, 0.28, 0.55, 1.0))
+	_color_rect(c, bx + 4.0, by + 24.0, 202.0, 9.0, Color(0.28, 0.40, 0.65, 1.0))
+	_surface_highlight(c, bx + 6.0, by + 26.0, 90.0, 0.08)
+	_outlined_rect(c, bx + 8.0, by + 5.0, 64.0, 22.0,
+		Color(0.82, 0.82, 0.86, 1.0), Color(0.40, 0.42, 0.50, 1.0))
+	_surface_highlight(c, bx + 10.0, by + 7.0, 36.0, 0.14)
+	_color_rect(c, bx - 5.0, by - 9.0, 220.0, 12.0, Color(0.10, 0.15, 0.30, 1.0))
+
+	# Nightstand + lamp — right of bed
+	var nx: float = bx + 214.0
+	var ny: float = by + 10.0
+	_outlined_rect(c, nx, ny, 42.0, 52.0,
+		Color(0.22, 0.16, 0.10, 1.0), Color(0.10, 0.07, 0.04, 1.0))
+	_color_rect(c, nx + 14.0, ny - 24.0, 3.0, 24.0, Color(0.30, 0.24, 0.18, 1.0))
+	_outlined_rect(c, nx + 4.0, ny - 36.0, 26.0, 14.0,
+		Color(0.70, 0.60, 0.30, 0.9), Color(0.30, 0.24, 0.16, 1.0))
+	_surface_highlight(c, nx + 6.0, ny - 34.0, 16.0, 0.20)
+
+	_add_hide_spot(c, Vector2(bx + 105.0, by + 54.0), "under bed", 210.0, 108.0)
+	_add_hide_spot(c, Vector2(dx + 50.0, dy + 27.0), "under desk", 100.0, 54.0)
+	# Full-width bed return — covers the bed
+	var area := Area2D.new()
+	area.name = "BedReturn"
+	area.set_script(load("res://scripts/bed_return.gd"))
+	area.position = Vector2(bx + 105.0, by + 54.0)
+	area.collision_layer = 0
+	area.collision_mask = 1
+	var vis := Polygon2D.new()
+	vis.name = "Visual"
+	vis.polygon = PackedVector2Array([
+		Vector2(-101, -50), Vector2(101, -50), Vector2(101, 50), Vector2(-101, 50)
+	])
+	vis.color = Color(0.18, 0.26, 0.50, 0.0)
+	area.add_child(vis)
+	var cs := CollisionShape2D.new()
+	cs.name = "CollisionShape2D"
+	var rs := RectangleShape2D.new()
+	rs.size = Vector2(202.0, 100.0)
+	cs.shape = rs
+	area.add_child(cs)
+	var lbl := Label.new()
+	lbl.name = "PromptLabel"
+	lbl.text = "TAP TO SLEEP 🛏️"
+	lbl.position = Vector2(-80.0, -68.0)
+	lbl.visible = false
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.modulate = Color(1.0, 0.9, 0.2, 1.0)
+	area.add_child(lbl)
+	c.add_child(area)
+
 # ── Entity spawners ───────────────────────────────────────────────────────────
 
 func _add_hide_spot(parent: Node2D, pos: Vector2, spot_name: String, w: float = 80.0, h: float = 50.0) -> void:
@@ -587,40 +560,6 @@ func _add_objective(parent: Node2D, pos: Vector2) -> void:
 	obj.position = pos
 	parent.add_child(obj)
 
-func _add_bed_return(parent: Node2D, rx: float, by: float, rw: float) -> void:
-	var bed_script: Script = load("res://scripts/bed_return.gd")
-	if not bed_script:
-		return
-	var area := Area2D.new()
-	area.name = "BedReturn"
-	area.set_script(bed_script)
-	var cx: float = rx + rw * 0.5
-	area.position = Vector2(cx, by + 49.0)
-	area.collision_layer = 0
-	area.collision_mask = 1
-	var vis := Polygon2D.new()
-	vis.name = "Visual"
-	var hw: float = rw * 0.5 - 4.0
-	vis.polygon = PackedVector2Array([
-		Vector2(-hw, -44), Vector2(hw, -44), Vector2(hw, 44), Vector2(-hw, 44)
-	])
-	vis.color = Color(0.18, 0.26, 0.50, 0.0)
-	area.add_child(vis)
-	var cs := CollisionShape2D.new()
-	cs.name = "CollisionShape2D"
-	var rs := RectangleShape2D.new()
-	rs.size = Vector2(rw - 8.0, 88.0)
-	cs.shape = rs
-	area.add_child(cs)
-	var lbl := Label.new()
-	lbl.name = "PromptLabel"
-	lbl.text = "TAP TO SLEEP 🛏️"
-	lbl.position = Vector2(-hw, -60)
-	lbl.visible = false
-	lbl.add_theme_font_size_override("font_size", 13)
-	lbl.modulate = Color(1.0, 0.9, 0.2, 1.0)
-	area.add_child(lbl)
-	parent.add_child(area)
 
 # ── Room data ─────────────────────────────────────────────────────────────────
 
