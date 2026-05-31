@@ -9,105 +9,242 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_mm")
 
-; Dark background
+; ── Deep night background ─────────────────────────────────────────────────────
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.04, 0.04, 0.09, 1)
+color = Color(0.03, 0.03, 0.07, 1)
 
-; Subtle house silhouette strip
-[node name="HouseSilhouette" type="ColorRect" parent="."]
-layout_mode = 0
+; ── Stars (scattered dots) ────────────────────────────────────────────────────
+[node name="Star1" type="ColorRect" parent="."]
+offset_left = 22
+offset_top = 38
+offset_right = 25
+offset_bottom = 41
+color = Color(0.9, 0.9, 1.0, 0.6)
+
+[node name="Star2" type="ColorRect" parent="."]
+offset_left = 78
+offset_top = 22
+offset_right = 81
+offset_bottom = 25
+color = Color(1.0, 0.95, 0.8, 0.5)
+
+[node name="Star3" type="ColorRect" parent="."]
+offset_left = 310
+offset_top = 44
+offset_right = 313
+offset_bottom = 47
+color = Color(0.9, 0.9, 1.0, 0.55)
+
+[node name="Star4" type="ColorRect" parent="."]
+offset_left = 355
+offset_top = 18
+offset_right = 358
+offset_bottom = 21
+color = Color(1.0, 0.95, 0.8, 0.45)
+
+[node name="Star5" type="ColorRect" parent="."]
+offset_left = 140
+offset_top = 58
+offset_right = 142
+offset_bottom = 60
+color = Color(0.85, 0.88, 1.0, 0.4)
+
+[node name="Star6" type="ColorRect" parent="."]
+offset_left = 260
+offset_top = 30
+offset_right = 263
+offset_bottom = 33
+color = Color(1.0, 0.95, 0.8, 0.5)
+
+; ── Moon ─────────────────────────────────────────────────────────────────────
+[node name="Moon" type="ColorRect" parent="."]
+offset_left = 316
+offset_top = 68
+offset_right = 370
+offset_bottom = 122
+color = Color(0.88, 0.90, 0.98, 0.18)
+
+[node name="MoonInner" type="ColorRect" parent="."]
+offset_left = 322
+offset_top = 74
+offset_right = 364
+offset_bottom = 116
+color = Color(0.92, 0.94, 1.0, 0.10)
+
+; ── House silhouette strip ────────────────────────────────────────────────────
+[node name="HouseBase" type="ColorRect" parent="."]
 offset_left = 0
-offset_top = 580
+offset_top = 640
 offset_right = 390
 offset_bottom = 844
-color = Color(0.07, 0.06, 0.10, 1)
+color = Color(0.055, 0.048, 0.075, 1)
 
-; Dad door crack (ambient flicker source)
-[node name="DoorLight" type="ColorRect" parent="."]
-offset_left = 155
-offset_top = 620
-offset_right = 175
-offset_bottom = 780
-color = Color(0.5, 0.35, 0.05, 0.1)
-
-; Moon window
-[node name="MoonWindow" type="ColorRect" parent="."]
-offset_left = 300
-offset_top = 100
-offset_right = 370
-offset_bottom = 170
-color = Color(0.7, 0.75, 1.0, 0.15)
-
-; Title
-[node name="TitleLabel" type="Label" parent="."]
-layout_mode = 0
+; Roof triangle (left)
+[node name="RoofL" type="ColorRect" parent="."]
 offset_left = 0
-offset_top = 120
+offset_top = 560
+offset_right = 130
+offset_bottom = 644
+color = Color(0.055, 0.048, 0.075, 1)
+
+[node name="RoofR" type="ColorRect" parent="."]
+offset_left = 260
+offset_top = 560
 offset_right = 390
-offset_bottom = 200
+offset_bottom = 644
+color = Color(0.055, 0.048, 0.075, 1)
+
+; Windows (dark with glow)
+[node name="WindowL" type="ColorRect" parent="."]
+offset_left = 28
+offset_top = 660
+offset_right = 88
+offset_bottom = 710
+color = Color(0.06, 0.05, 0.09, 1)
+
+[node name="WindowLGlow" type="ColorRect" parent="."]
+offset_left = 30
+offset_top = 662
+offset_right = 86
+offset_bottom = 708
+color = Color(0.38, 0.25, 0.06, 0.08)
+
+[node name="WindowR" type="ColorRect" parent="."]
+offset_left = 302
+offset_top = 660
+offset_right = 362
+offset_bottom = 710
+color = Color(0.06, 0.05, 0.09, 1)
+
+[node name="WindowRGlow" type="ColorRect" parent="."]
+offset_left = 304
+offset_top = 662
+offset_right = 360
+offset_bottom = 708
+color = Color(0.38, 0.25, 0.06, 0.08)
+
+; Dad's door (centre, amber crack glow)
+[node name="Door" type="ColorRect" parent="."]
+offset_left = 162
+offset_top = 710
+offset_right = 228
+offset_bottom = 844
+color = Color(0.08, 0.06, 0.10, 1)
+
+[node name="DoorLight" type="ColorRect" parent="."]
+offset_left = 178
+offset_top = 712
+offset_right = 212
+offset_bottom = 842
+color = Color(0.55, 0.35, 0.05, 0.10)
+
+[node name="DoorCrack" type="ColorRect" parent="."]
+offset_left = 162
+offset_top = 710
+offset_right = 165
+offset_bottom = 844
+color = Color(0.70, 0.45, 0.08, 0.22)
+
+; ── Title block ───────────────────────────────────────────────────────────────
+[node name="TitleShadow" type="Label" parent="."]
+offset_left = 2
+offset_top = 112
+offset_right = 392
+offset_bottom = 192
 text = "DON'T WAKE DAD"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 32
-modulate = Color(1.0, 0.85, 0.85, 1.0)
+theme_override_font_sizes/font_size = 34
+modulate = Color(0.0, 0.0, 0.0, 0.5)
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 0
+offset_top = 110
+offset_right = 390
+offset_bottom = 190
+text = "DON'T WAKE DAD"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 34
+modulate = Color(1.0, 0.82, 0.78, 1.0)
+
+[node name="TitleUnderline" type="ColorRect" parent="."]
+offset_left = 60
+offset_top = 192
+offset_right = 330
+offset_bottom = 194
+color = Color(0.9, 0.4, 0.3, 0.35)
 
 [node name="SubTitle" type="Label" parent="."]
-layout_mode = 0
 offset_left = 0
-offset_top = 195
+offset_top = 198
 offset_right = 390
-offset_bottom = 230
-text = "🤫  sneak or suffer  🤫"
+offset_bottom = 226
+text = "sneak  •  hide  •  survive"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 16
-modulate = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.50, 0.48, 0.60, 1)
 
-; VBox for main buttons and labels
-[node name="VBox" type="VBoxContainer" parent="."]
-layout_mode = 0
+; ── Mission preview card ──────────────────────────────────────────────────────
+[node name="MissionCard" type="ColorRect" parent="."]
+offset_left = 30
+offset_top = 248
+offset_right = 360
+offset_bottom = 330
+color = Color(0.07, 0.06, 0.12, 0.95)
+
+[node name="MissionCardEdge" type="ColorRect" parent="."]
+offset_left = 30
+offset_top = 248
+offset_right = 360
+offset_bottom = 250
+color = Color(0.55, 0.40, 0.70, 0.45)
+
+[node name="MissionLabel" type="Label" parent="."]
 offset_left = 40
-offset_top = 270
+offset_top = 254
 offset_right = 350
-offset_bottom = 700
-theme_override_constants/separation = 18
-
-[node name="MissionLabel" type="Label" parent="VBox"]
+offset_bottom = 326
 text = "Tonight:\n\"Loading mission...\""
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.85, 0.85, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.88, 0.88, 1.0, 1)
 autowrap_mode = 3
 
-[node name="Spacer1" type="Control" parent="VBox"]
-custom_minimum_size = Vector2(0, 20)
+; ── Buttons ───────────────────────────────────────────────────────────────────
+[node name="VBox" type="VBoxContainer" parent="."]
+offset_left = 40
+offset_top = 350
+offset_right = 350
+offset_bottom = 560
+theme_override_constants/separation = 14
 
 [node name="PlayButton" type="Button" parent="VBox"]
 text = "SNEAK IN  🤫"
-custom_minimum_size = Vector2(0, 64)
-theme_override_font_sizes/font_size = 22
+custom_minimum_size = Vector2(0, 70)
+theme_override_font_sizes/font_size = 24
 
-[node name="Spacer2" type="Control" parent="VBox"]
-custom_minimum_size = Vector2(0, 10)
+[node name="Spacer" type="Control" parent="VBox"]
+custom_minimum_size = Vector2(0, 6)
 
 [node name="StarsLabel" type="Label" parent="VBox"]
-text = "⭐ Total Stars: 0"
+text = "⭐  Total Stars: 0"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 15
-modulate = Color(0.9, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+modulate = Color(0.92, 0.86, 0.40, 1)
 
+; ── Version ───────────────────────────────────────────────────────────────────
 [node name="VersionLabel" type="Label" parent="."]
-layout_mode = 0
 offset_left = 0
-offset_top = 810
+offset_top = 814
 offset_right = 390
 offset_bottom = 840
-text = "v1.0"
+text = "v1.0  •  Don't Wake Dad"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 12
-modulate = Color(0.3, 0.3, 0.35, 1)
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.25, 0.24, 0.32, 1)
 
 [node name="AmbiencePlayer" type="AudioStreamPlayer" parent="."]
 volume_db = -22.0

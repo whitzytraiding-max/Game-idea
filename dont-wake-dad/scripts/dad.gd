@@ -8,6 +8,9 @@ enum State { SLEEPING, STIRRING, CHASING, SEARCHING, RETURNING }
 
 @onready var _visual: Polygon2D              = $Visual
 @onready var _eye_glow: PointLight2D         = $EyeGlow
+@onready var _angry_aura: PointLight2D       = $AngryAura
+@onready var _glow_l: Polygon2D              = $Head/GlowL
+@onready var _glow_r: Polygon2D              = $Head/GlowR
 @onready var _snore_audio: AudioStreamPlayer2D = $SnoreAudio
 @onready var _footstep_audio: AudioStreamPlayer2D = $FootstepAudio
 @onready var _yell_audio: AudioStreamPlayer2D  = $YellAudio
@@ -35,6 +38,10 @@ func _ready() -> void:
 	_catch_area.body_entered.connect(_on_catch_area_body_entered)
 	if _eye_glow:
 		_eye_glow.enabled = false
+	if _angry_aura:
+		_angry_aura.energy = 0.0
+	if _glow_l: _glow_l.color.a = 0.0
+	if _glow_r: _glow_r.color.a = 0.0
 	_setup_voice_bus()
 	_load_audio()
 	if _snore_audio and _snore_audio.stream:
@@ -177,6 +184,12 @@ func _enter_chase() -> void:
 		_snore_audio.stop()
 	if _eye_glow:
 		_eye_glow.enabled = true
+	# Fade in red eye polygons and angry aura
+	if _glow_l or _glow_r or _angry_aura:
+		var tween := create_tween().set_parallel(true)
+		if _glow_l: tween.tween_property(_glow_l, "color:a", 1.0, 0.25)
+		if _glow_r: tween.tween_property(_glow_r, "color:a", 1.0, 0.25)
+		if _angry_aura: tween.tween_property(_angry_aura, "energy", 1.8, 0.4)
 	if _yell_audio and _yell_audio.stream:
 		_yell_audio.play()
 	dad_woke_up.emit()
@@ -197,6 +210,11 @@ func _enter_returning() -> void:
 	set_state(State.RETURNING)
 	if _eye_glow:
 		_eye_glow.enabled = false
+	if _glow_l or _glow_r or _angry_aura:
+		var tween := create_tween().set_parallel(true)
+		if _glow_l: tween.tween_property(_glow_l, "color:a", 0.0, 0.5)
+		if _glow_r: tween.tween_property(_glow_r, "color:a", 0.0, 0.5)
+		if _angry_aura: tween.tween_property(_angry_aura, "energy", 0.0, 0.5)
 	_play_voice("dad_returning.wav", -4.0)
 
 func _enter_sleeping() -> void:

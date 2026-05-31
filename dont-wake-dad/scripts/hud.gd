@@ -3,6 +3,8 @@ extends CanvasLayer
 @onready var _noise_bar: ProgressBar = $NoiseBar
 @onready var _dad_status: Label      = $DadStatus
 @onready var _objective_label: Label = $ObjectiveLabel
+@onready var _run_label: Label       = $RunLabel
+@onready var _dad_pill: ColorRect    = $DadPill
 @onready var _pulse_tween: Tween     = null
 
 func _ready() -> void:
@@ -14,12 +16,18 @@ func _ready() -> void:
 
 func _on_run_started(objective: String) -> void:
 	if _objective_label:
-		_objective_label.text = "🎯 " + objective
+		_objective_label.text = "🎯  " + objective
+		_objective_label.modulate = Color(0.85, 0.85, 1.0, 0.95)
+	if _run_label:
+		_run_label.text = "⭐ %d  |  RUN %d" % [GameManager.total_stars, GameManager.current_run]
 
 func _on_phase_one_complete(_obj: String) -> void:
 	if _objective_label:
-		_objective_label.text = "🛏️  GET BACK TO BED!"
-		_objective_label.modulate = Color(1.0, 0.9, 0.2, 1.0)
+		_objective_label.text = "🛏️   GET BACK TO BED!"
+		_objective_label.modulate = Color(1.0, 0.92, 0.15, 1.0)
+		var tween := create_tween().set_loops(4)
+		tween.tween_property(_objective_label, "modulate:a", 0.4, 0.25)
+		tween.tween_property(_objective_label, "modulate:a", 1.0, 0.25)
 
 func _on_noise_changed(value: float) -> void:
 	_update_bar(value)
@@ -53,13 +61,16 @@ func _update_dad_status(value: float) -> void:
 	if not _dad_status:
 		return
 	if value < 80.0:
-		_dad_status.text = "😴  DAD: SLEEPING"
-		_dad_status.modulate = Color(0.5, 1.0, 0.5, 1.0)
+		_dad_status.text = "💤  DAD: SLEEPING"
+		_dad_status.modulate = Color(0.45, 1.0, 0.45, 1.0)
+		if _dad_pill: _dad_pill.color = Color(0.08, 0.14, 0.08, 0.85)
 	elif value < 100.0:
-		_dad_status.text = "😤  DAD: STIRRING"
-		_dad_status.modulate = Color(1.0, 0.7, 0.1, 1.0)
+		_dad_status.text = "😤  DAD: STIRRING..."
+		_dad_status.modulate = Color(1.0, 0.75, 0.1, 1.0)
+		if _dad_pill: _dad_pill.color = Color(0.18, 0.12, 0.04, 0.90)
 	else:
-		_dad_status.text = "😡  DAD: AWAKE!"
-		_dad_status.modulate = Color(1.0, 0.1, 0.1, 1.0)
+		_dad_status.text = "😡  DAD: COMING!"
+		_dad_status.modulate = Color(1.0, 0.15, 0.1, 1.0)
+		if _dad_pill: _dad_pill.color = Color(0.22, 0.04, 0.04, 0.92)
 		if OS.has_feature("mobile"):
 			Input.vibrate_handheld(200)

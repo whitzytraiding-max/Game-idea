@@ -6,59 +6,115 @@
 layer = 10
 script = ExtResource("1_hud")
 
-; Dark top bar background
+; ── Top panel (frosted glass look) ───────────────────────────────────────────
 [node name="TopBar" type="ColorRect" parent="."]
 offset_left = 0
 offset_top = 0
 offset_right = 390
-offset_bottom = 80
-color = Color(0.04, 0.04, 0.09, 0.88)
+offset_bottom = 88
+color = Color(0.04, 0.03, 0.08, 0.92)
 
-; NOISE label
-[node name="NoiseLabel" type="Label" parent="."]
+; Top panel inner highlight line
+[node name="TopBarEdge" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 87
+offset_right = 390
+offset_bottom = 89
+color = Color(0.4, 0.3, 0.6, 0.4)
+
+; ── NOISE section ─────────────────────────────────────────────────────────────
+[node name="NoiseIcon" type="Label" parent="."]
 offset_left = 10
-offset_top = 6
-offset_right = 100
+offset_top = 8
+offset_right = 32
 offset_bottom = 28
-text = "NOISE"
-theme_override_font_sizes/font_size = 13
-modulate = Color(0.7, 0.7, 0.8, 1)
+text = "🔊"
+theme_override_font_sizes/font_size = 14
 
-; The noise meter bar
+[node name="NoiseLabel" type="Label" parent="."]
+offset_left = 34
+offset_top = 9
+offset_right = 110
+offset_bottom = 27
+text = "NOISE"
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.55, 0.55, 0.70, 1)
+
+; Noise bar track (background)
+[node name="NoiseTrack" type="ColorRect" parent="."]
+offset_left = 10
+offset_top = 30
+offset_right = 380
+offset_bottom = 52
+color = Color(0.08, 0.06, 0.14, 1.0)
+
+; Noise bar fill (actual ProgressBar, styled via script)
 [node name="NoiseBar" type="ProgressBar" parent="."]
 offset_left = 10
-offset_top = 28
+offset_top = 30
 offset_right = 380
-offset_bottom = 54
+offset_bottom = 52
 max_value = 100
 value = 0
 show_percentage = false
 
-; Dad status label
+; ── Dad status pill ───────────────────────────────────────────────────────────
+[node name="DadPill" type="ColorRect" parent="."]
+offset_left = 10
+offset_top = 57
+offset_right = 220
+offset_bottom = 80
+color = Color(0.08, 0.14, 0.08, 0.85)
+
 [node name="DadStatus" type="Label" parent="."]
-offset_left = 10
-offset_top = 56
-offset_right = 380
-offset_bottom = 78
-text = "😴  DAD: SLEEPING"
-theme_override_font_sizes/font_size = 13
-modulate = Color(0.5, 1.0, 0.5, 1)
+offset_left = 14
+offset_top = 58
+offset_right = 216
+offset_bottom = 79
+text = "💤  DAD: SLEEPING"
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.45, 1.0, 0.45, 1)
 
-; Objective label (bottom of screen)
-[node name="ObjectiveLabel" type="Label" parent="."]
-offset_left = 10
-offset_top = 800
+; ── Run counter pill ──────────────────────────────────────────────────────────
+[node name="RunPill" type="ColorRect" parent="."]
+offset_left = 226
+offset_top = 57
 offset_right = 380
-offset_bottom = 840
-text = "Mission: ..."
-theme_override_font_sizes/font_size = 13
-modulate = Color(0.8, 0.8, 1.0, 0.85)
-horizontal_alignment = 1
+offset_bottom = 80
+color = Color(0.10, 0.08, 0.16, 0.85)
 
-; Bottom bar
+[node name="RunLabel" type="Label" parent="."]
+offset_left = 230
+offset_top = 58
+offset_right = 376
+offset_bottom = 79
+text = "⭐ 0  |  RUN 1"
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.85, 0.80, 0.40, 1)
+horizontal_alignment = 2
+
+; ── Bottom mission bar ────────────────────────────────────────────────────────
 [node name="BottomBar" type="ColorRect" parent="."]
 offset_left = 0
 offset_top = 796
 offset_right = 390
 offset_bottom = 844
-color = Color(0.04, 0.04, 0.09, 0.75)
+color = Color(0.04, 0.03, 0.08, 0.92)
+
+[node name="BottomBarEdge" type="ColorRect" parent="."]
+offset_left = 0
+offset_top = 795
+offset_right = 390
+offset_bottom = 797
+color = Color(0.4, 0.3, 0.6, 0.4)
+
+[node name="ObjectiveLabel" type="Label" parent="."]
+offset_left = 10
+offset_top = 802
+offset_right = 380
+offset_bottom = 840
+text = "🎯  Mission loading..."
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.85, 0.85, 1.0, 0.95)
+horizontal_alignment = 1
+vertical_alignment = 1
