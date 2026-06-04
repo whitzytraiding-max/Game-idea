@@ -22,11 +22,13 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+SaveManager="*res://autoload/SaveManager.gd"
 NoiseMeter="*res://autoload/NoiseMeter.gd"
 GameManager="*res://autoload/GameManager.gd"
 EventManager="*res://autoload/EventManager.gd"
 DifficultyManager="*res://autoload/DifficultyManager.gd"
 AdManager="*res://autoload/AdManager.gd"
+PurchaseManager="*res://autoload/PurchaseManager.gd"
 
 [display]
 

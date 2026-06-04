@@ -58,13 +58,16 @@ func _on_rewarded_earned(_currency: String, _amount: int) -> void:
 
 # ── Called by game.gd when player taps Extra Life ─────────────────────────────
 func request_extra_life() -> void:
+	# If player bought "Remove Ads" — grant immediately, no ad shown
+	if SaveManager.ads_removed:
+		extra_life_granted.emit()
+		return
+
 	if not _admob:
-		# No plugin (dev/simulator) — grant directly so gameplay isn't blocked
 		extra_life_granted.emit()
 		return
 
 	if _rewarded_ready:
 		_admob.show_rewarded_video()
 	else:
-		# Ad not loaded yet — let the UI know
 		ad_not_available.emit()

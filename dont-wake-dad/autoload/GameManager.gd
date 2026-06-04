@@ -36,6 +36,8 @@ var phase: int = 0   # 0 = collect item, 1 = return to bed
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Load persisted progress — SaveManager must be above GameManager in autoload order
+	total_stars = SaveManager.total_stars
 
 func start_run() -> void:
 	phase = 0
@@ -66,6 +68,8 @@ func complete_run() -> void:
 	last_stars = stars
 	last_completion_pct = 100.0
 	total_stars += stars
+	SaveManager.add_stars(stars)
+	SaveManager.update_best_run(current_run)
 	run_completed.emit(stars, peak)
 	await get_tree().create_timer(0.5).timeout
 	get_tree().change_scene_to_file(SCENE_WIN)
