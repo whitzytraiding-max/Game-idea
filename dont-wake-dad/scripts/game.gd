@@ -203,7 +203,9 @@ func _on_player_caught() -> void:
 	get_tree().paused = true
 	if _caught_overlay:
 		_caught_overlay.visible = true
-		_caught_overlay.get_node("ExtraLifeButton").visible = GameManager.revives_used_this_run < 2
+		var extra_btn = _caught_overlay.get_node("ExtraLifeButton")
+		extra_btn.visible = GameManager.revives_used_this_run < 2
+		extra_btn.text = "📺  Watch Ad for Extra Life"
 
 func _on_give_up() -> void:
 	get_tree().paused = false
@@ -213,7 +215,23 @@ func _on_give_up() -> void:
 	GameManager.go_to_main_menu()
 
 func _on_extra_life() -> void:
+	AdManager.extra_life_granted.connect(_on_ad_reward_earned, CONNECT_ONE_SHOT)
+	AdManager.ad_not_available.connect(_on_ad_not_ready, CONNECT_ONE_SHOT)
+	AdManager.request_extra_life()
+
+func _on_ad_reward_earned() -> void:
 	_grant_extra_life()
+
+func _on_ad_not_ready() -> void:
+	# Ad not loaded yet — show brief message on the button
+	var extra_btn = _caught_overlay.get_node_or_null("ExtraLifeButton")
+	if extra_btn:
+		var orig: String = extra_btn.text
+		extra_btn.text = "Ad not ready yet..."
+		extra_btn.disabled = true
+		await get_tree().create_timer(2.0).timeout
+		extra_btn.text = orig
+		extra_btn.disabled = false
 
 func _grant_extra_life() -> void:
 	get_tree().paused = false

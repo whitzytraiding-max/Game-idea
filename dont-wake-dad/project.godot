@@ -26,6 +26,7 @@ NoiseMeter="*res://autoload/NoiseMeter.gd"
 GameManager="*res://autoload/GameManager.gd"
 EventManager="*res://autoload/EventManager.gd"
 DifficultyManager="*res://autoload/DifficultyManager.gd"
+AdManager="*res://autoload/AdManager.gd"
 
 [display]
 
@@ -33,12 +34,7 @@ window/size/viewport_width=390
 window/size/viewport_height=844
 window/size/resizable=false
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/handheld/orientation=1
-
-[input_devices]
-
-pointing/emulate_touch_from_mouse=true
 
 [input]
 
@@ -47,6 +43,10 @@ tap_move={
 "events": [Object(InputEventScreenTouch,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"index":0,"position":Vector2(0, 0),"canceled":false,"pressed":false,"double_tap":false,"script":null)
 ]
 }
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
 
 [physics]
 
